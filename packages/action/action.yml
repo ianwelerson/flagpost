@@ -1,0 +1,45 @@
+name: flagpost
+description: Validate flag YAML files and build flags.json for a flagpost repo
+author: Ian Welerson
+branding:
+  icon: flag
+  color: blue
+
+inputs:
+  mode:
+    description: 'Operation: "validate" (PR check) or "build" (compile flags.json + update README and commit).'
+    required: true
+  flags-dir:
+    description: Directory containing per-flag YAML files.
+    required: false
+    default: flags
+  output-path:
+    description: Path the compiled flags.json is written to.
+    required: false
+    default: flags.json
+  readme-path:
+    description: Path to the README.md to update with the flag table.
+    required: false
+    default: README.md
+  commit-message:
+    description: Commit message used when build mode pushes changes.
+    required: false
+    default: 'chore(flagpost): update compiled flags'
+  commit-user-name:
+    description: Git author name used when committing.
+    required: false
+    default: github-actions[bot]
+  commit-user-email:
+    description: Git author email used when committing.
+    required: false
+    default: 41898282+github-actions[bot]@users.noreply.github.com
+
+outputs:
+  changed:
+    description: 'true if build mode produced changes that were committed; "false" otherwise.'
+  flag-count:
+    description: Number of flags discovered.
+
+runs:
+  using: node20
+  main: dist/index.js

@@ -1,0 +1,46 @@
+{
+  "name": "@flagpost/core",
+  "version": "0.0.0",
+  "description": "Shared schema and types for flagpost",
+  "license": "MIT",
+  "author": "Ian Welerson",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianwelerson/flagpost.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/ianwelerson/flagpost/tree/develop/packages/core",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "yaml": "^2.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}

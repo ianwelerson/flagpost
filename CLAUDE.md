@@ -4,13 +4,32 @@ Monorepo for the **flagpost** project — git-based feature flag control. Users 
 
 See [IDEA.md](./IDEA.md) for the full design, v1 scope, and naming decisions.
 
-## Packages (planned)
+## Packages
 
-- `packages/core` → `@flagpost/core` — shared flag schema & types
-- `packages/sdk-js` → `@flagpost/sdk-js` — JS runtime SDK
-- `packages/action` → `@flagpost/action` — GitHub Action (validate + build `flags.json` + update README table)
+- `packages/core` → `@flagpost/core` — shared flag schema & types (zod)
+- `packages/sdk-js` → `@flagpost/sdk-js` — JS runtime SDK (`Flagpost` class, fetch + cache + override resolution)
+- `packages/action` → `@flagpost/action` — GitHub Action with `mode: validate | build` (validates flag YAML, compiles `flags.json`, updates README table, commits + pushes)
 
-Toolchain: pnpm workspaces, TypeScript.
+Cross-package imports resolve via tsconfig `paths` (typecheck) and vitest `resolve.alias` (tests), both pointing at the source TS — so neither typecheck nor tests need a prior build.
+
+## Toolchain
+
+- pnpm workspaces, TypeScript strict, Node 20+
+- Build: `tsup` (sdk-js, core → ESM+CJS+dts), `@vercel/ncc` (action → single bundled JS)
+- Test: vitest
+- Lint+format: biome (single tool, config in `biome.json`)
+- Versioning: changesets (action excluded — it's not published to npm)
+
+## Common commands
+
+```bash
+pnpm install
+pnpm build       # build all packages
+pnpm test        # run all tests (vitest)
+pnpm typecheck   # tsc --noEmit per package
+pnpm lint        # biome check
+pnpm lint:fix    # biome check --write
+```
 
 ## Related repos
 
