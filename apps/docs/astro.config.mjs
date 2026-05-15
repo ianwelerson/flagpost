@@ -1,5 +1,6 @@
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
+import starlightLlmsTxt from 'starlight-llms-txt';
 
 // When deploying to a custom domain (flagpost.dev), `site` is the canonical URL and
 // `base` stays at '/'. If hosting at github.io/<repo>, set base: '/flagpost/' instead.
@@ -11,9 +12,22 @@ export default defineConfig({
       description:
         'Git-based feature flag control. Manage feature flags as YAML files in a GitHub repo - no servers, no accounts.',
       logo: { src: './src/assets/logo.svg', replacesTitle: false },
-      social: {
-        github: 'https://github.com/ianwelerson/flagpost',
-      },
+      plugins: [
+        starlightLlmsTxt({
+          projectName: 'flagpost',
+          description:
+            'Git-based feature flag control. Manage feature flags as YAML files in a GitHub repo - no servers, no accounts.',
+          details:
+            'flagpost stores feature flags as YAML files in a git repository. A GitHub Action validates the schema and compiles a flags.json artifact; a tiny JS SDK reads it at runtime and evaluates rollout / targeting / environment rules.',
+        }),
+      ],
+      social: [
+        {
+          icon: 'github',
+          label: 'GitHub',
+          href: 'https://github.com/ianwelerson/flagpost',
+        },
+      ],
       editLink: {
         baseUrl: 'https://github.com/ianwelerson/flagpost/edit/develop/apps/docs/',
       },
