@@ -21,7 +21,7 @@ You already have GitHub. You already do code review. You already have an audit l
 
 - 🗂️ **Flags as YAML** - one file per flag, version-controlled, easy to diff
 - 🔀 **PR-driven changes** - review, audit log, and rollback come for free via `git`
-- 🤖 **GitHub Action** - validates schema, compiles `flags.json`, updates the README table
+- 🤖 **GitHub Action** - validates schema, compiles `flags.json`, refreshes the flag table in `FLAGS.md`
 - 📦 **Tiny JS SDK** - fetch, cache, and evaluate flags at runtime
 - 🔒 **Private-repo-first** - your flag names never leak; no public dashboard
 - 🛠️ **Local overrides** - force flags on/off for dev and tests with zero ceremony
@@ -61,7 +61,7 @@ description: Roll out the redesigned checkout
 owner: "@you"
 ```
 
-Open a PR. The action validates it. Merge it. The action compiles `flags.json` and updates the README table.
+Open a PR. The action validates it. Merge it. The action compiles `flags.json` and refreshes the flag table in `FLAGS.md`.
 
 ### 3. Install the SDK in your app
 
@@ -102,7 +102,7 @@ That's it. **No backend. No dashboard. No account.**
 | ✅ JS SDK with PAT auth             |                                    |
 | ✅ Local overrides + memory/file sources |                                |
 | ✅ Schema validation Action         |                                    |
-| ✅ Auto-updated README table        |                                    |
+| ✅ Auto-updated flag table (FLAGS.md) |                                    |
 
 See [IDEA.md](./IDEA.md) for the full design and rationale.
 

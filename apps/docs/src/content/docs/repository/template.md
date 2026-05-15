@@ -3,7 +3,7 @@ title: Using the template
 description: The fastest way to spin up a flagpost flag repository - fork the official template.
 ---
 
-The fastest, recommended way to create a flag repository is to fork the [flagpost-template](https://github.com/ianwelerson/flagpost-template) repo. It ships with everything wired up: schema, workflows, README markers, example flag.
+The fastest, recommended way to create a flag repository is to fork the [flagpost-template](https://github.com/ianwelerson/flagpost-template) repo. It ships with everything wired up: schema, workflows, flag-table file with markers, example flag.
 
 ## Step-by-step
 
@@ -25,7 +25,8 @@ my-flags/
 ├── .github/workflows/
 │   ├── validate.yml
 │   └── build.yml
-└── README.md                    # with flagpost:flags-table markers
+├── FLAGS.md                     # with flagpost:flags-table markers (auto-updated)
+└── README.md                    # human-written, untouched by the action
 ```
 
 The workflows reference `ianwelerson/flagpost/packages/action@v1` (the published action). You don't need to install anything in the repo - GitHub fetches the action at runtime.
@@ -50,8 +51,8 @@ When the PR merges to your default branch, the `build` workflow:
 
 1. Re-validates every flag
 2. Compiles `flags.json`
-3. Updates the flag table in `README.md` between the markers
-4. Commits and pushes the updated `flags.json` + README if anything changed
+3. Updates the flag table in `FLAGS.md` between the markers
+4. Commits and pushes the updated `flags.json` + `FLAGS.md` if anything changed
 
 Your `flags.json` is now ready to be read by the SDK.
 

@@ -11,8 +11,8 @@ Every flag file under `flags/` must conform to this schema. The schema is **stri
 |---|---|---|---|
 | `name` | string | yes | Lowercase alphanumeric + hyphens (`[a-z0-9](-[a-z0-9])*`), 1-64 chars. Must equal filename minus extension. |
 | `enabled` | boolean | yes | Base on/off state. |
-| `description` | string | no | <= 280 chars. Used in the auto-updated README table. |
-| `owner` | string | no | <= 64 chars. Used in the README table. |
+| `description` | string | no | <= 280 chars. Used in the auto-updated flag table. |
+| `owner` | string | no | <= 64 chars. Used in the flag table. |
 | `rollout` | integer | no | Percentage (0-100). Needs `userId` in context. |
 | `targeting` | object | no | See [Targeting](#targeting) below. |
 | `environments` | object | no | See [Environments](#environments) below. |

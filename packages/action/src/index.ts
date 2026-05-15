@@ -1,9 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import * as core from '@actions/core';
 import { buildCompiledFlags, serializeCompiledFlags } from './build.js';
+import { renderFlagTable, updateFlagTable } from './flags-table.js';
 import { commitAndPush, hasChanges } from './git.js';
 import { readFlagFiles, writeFileIfChanged } from './io.js';
-import { renderFlagTable, updateReadmeTable } from './readme.js';
 import { validateFlagFiles } from './validate.js';
 
 type Mode = 'validate' | 'build';
@@ -12,7 +12,7 @@ async function run(): Promise<void> {
   const mode = core.getInput('mode', { required: true }) as Mode;
   const flagsDir = core.getInput('flags-dir') || 'flags';
   const outputPath = core.getInput('output-path') || 'flags.json';
-  const readmePath = core.getInput('readme-path') || 'README.md';
+  const tablePath = core.getInput('table-path') || 'FLAGS.md';
   const commitMessage = core.getInput('commit-message') || 'chore(flagpost): update compiled flags';
   const commitUserName = core.getInput('commit-user-name') || 'github-actions[bot]';
   const commitUserEmail =
@@ -46,17 +46,19 @@ async function run(): Promise<void> {
   const jsonChanged = await writeFileIfChanged(outputPath, serializeCompiledFlags(compiled));
   core.info(`Wrote ${outputPath} (${flags.size} flags), changed=${jsonChanged}`);
 
-  let readmeChanged = false;
+  let tableChanged = false;
   try {
-    const readme = await readFile(readmePath, 'utf8');
-    const newReadme = updateReadmeTable(readme, renderFlagTable(flags));
-    readmeChanged = await writeFileIfChanged(readmePath, newReadme);
-    core.info(`Updated ${readmePath}, changed=${readmeChanged}`);
+    const doc = await readFile(tablePath, 'utf8');
+    const updated = updateFlagTable(doc, renderFlagTable(flags));
+    tableChanged = await writeFileIfChanged(tablePath, updated);
+    core.info(`Updated ${tablePath}, changed=${tableChanged}`);
   } catch (err) {
-    core.warning(`Skipped README update: ${err instanceof Error ? err.message : String(err)}`);
+    core.warning(
+      `Skipped flag table update (${tablePath}): ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
-  const filesToCommit = [outputPath, readmePath];
+  const filesToCommit = [outputPath, tablePath];
   const changed = await hasChanges(filesToCommit);
   core.setOutput('changed', changed ? 'true' : 'false');
 

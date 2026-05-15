@@ -25,23 +25,25 @@ your-repo/
 │   ├── new-checkout.yml
 │   └── dark-mode.yml
 ├── flags.json                   # compiled artifact (committed by the action)
+├── FLAGS.md                     # auto-updated flag table (committed by the action)
 ├── .github/workflows/
 │   ├── validate.yml             # runs on PRs - schema check
 │   └── build.yml                # runs on merge - compile + commit
-└── README.md                    # optional but recommended - has flag table
+└── README.md                    # human-written; not touched by the action
 ```
 
 - **`flags/*.yml`** - the canonical source. Each file represents one flag. The filename (minus `.yml`) must equal the `name` field.
 - **`flags.json`** - the compiled artifact. The SDK fetches this. Committed by the build workflow on every merge.
+- **`FLAGS.md`** - the auto-updated flag dashboard. Holds the [`flagpost:flags-table` markers](/repository/workflows/#flag-table-markers) the build workflow renders into. Configurable via `table-path` (set to `README.md` if you'd rather have it inline).
 - **`.github/workflows/`** - one workflow for PR validation, one for the merge build.
-- **`README.md`** - optional. If you include the [`flagpost:flags-table` markers](/repository/workflows/#readme-markers), the build workflow keeps a flag dashboard there.
+- **`README.md`** - your normal project README. Untouched by the action unless you point `table-path` at it.
 
 ## How the workflows work
 
 Two workflows, two modes of the same action:
 
 1. **`validate` mode** runs on PRs. Parses every `flags/*.yml`, validates against the schema, fails the job on any error. Read-only.
-2. **`build` mode** runs on push to your default branch. Re-runs validation, compiles `flags.json`, refreshes the README flag table, commits and pushes if anything changed.
+2. **`build` mode** runs on push to your default branch. Re-runs validation, compiles `flags.json`, refreshes the flag table in `FLAGS.md` (or wherever `table-path` points), commits and pushes if anything changed.
 
 The action is just one step. You always need `actions/checkout@v4` first to put the repo on disk, and the build job needs `permissions: contents: write` to commit the regenerated `flags.json`.
 

@@ -1,11 +1,11 @@
 import type { Flag } from '@flagpost/core';
 import { describe, expect, it } from 'vitest';
 import {
-  README_END_MARKER,
-  README_START_MARKER,
+  TABLE_END_MARKER,
+  TABLE_START_MARKER,
   renderFlagTable,
-  updateReadmeTable,
-} from './readme.js';
+  updateFlagTable,
+} from './flags-table.js';
 
 function flagMap(entries: Array<[string, Flag]>): Map<string, Flag> {
   return new Map(entries);
@@ -38,29 +38,29 @@ describe('renderFlagTable', () => {
   });
 });
 
-describe('updateReadmeTable', () => {
+describe('updateFlagTable', () => {
   it('replaces content between markers', () => {
-    const readme = [
-      '# Title',
+    const doc = [
+      '# Flags',
       '',
       'Some content.',
       '',
-      README_START_MARKER,
+      TABLE_START_MARKER,
       'OLD TABLE',
-      README_END_MARKER,
+      TABLE_END_MARKER,
       '',
       'Footer.',
     ].join('\n');
 
-    const out = updateReadmeTable(readme, '| Flag |\n|---|\n');
+    const out = updateFlagTable(doc, '| Flag |\n|---|\n');
     expect(out).toContain('| Flag |');
     expect(out).not.toContain('OLD TABLE');
     expect(out).toContain('Footer.');
-    expect(out).toContain(README_START_MARKER);
-    expect(out).toContain(README_END_MARKER);
+    expect(out).toContain(TABLE_START_MARKER);
+    expect(out).toContain(TABLE_END_MARKER);
   });
 
   it('throws if markers missing', () => {
-    expect(() => updateReadmeTable('# No markers here', '| x |')).toThrow(/markers/);
+    expect(() => updateFlagTable('# No markers here', '| x |')).toThrow(/markers/);
   });
 });

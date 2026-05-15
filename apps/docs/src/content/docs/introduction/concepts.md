@@ -66,7 +66,7 @@ flagpost.isEnabled('new-checkout', { userId: 'user_123' });
 
 ## Action
 
-The GitHub Action (`@flagpost/action`) that runs in the flag repository on PR (validate mode) and on merge (build mode). It enforces the schema, produces `flags.json`, and updates the README's flag table.
+The GitHub Action (`@flagpost/action`) that runs in the flag repository on PR (validate mode) and on merge (build mode). It enforces the schema, produces `flags.json`, and updates the flag table in `FLAGS.md` (configurable via the `table-path` input).
 
 See [GitHub Action workflows](/repository/workflows/) for how it's wired into a repo.
 

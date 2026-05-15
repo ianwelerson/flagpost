@@ -1,7 +1,7 @@
 import type { Flag } from '@flagpost/core';
 
-export const README_START_MARKER = '<!-- flagpost:flags-table:start -->';
-export const README_END_MARKER = '<!-- flagpost:flags-table:end -->';
+export const TABLE_START_MARKER = '<!-- flagpost:flags-table:start -->';
+export const TABLE_END_MARKER = '<!-- flagpost:flags-table:end -->';
 
 export function renderFlagTable(flags: Map<string, Flag>): string {
   if (flags.size === 0) {
@@ -22,19 +22,17 @@ export function renderFlagTable(flags: Map<string, Flag>): string {
 }
 
 /**
- * Replace the contents between the start/end markers in the README.
- * Returns the new README contents. Throws if markers are missing.
+ * Replace the contents between the start/end markers in the target markdown file.
+ * Returns the new file contents. Throws if markers are missing.
  */
-export function updateReadmeTable(readme: string, table: string): string {
-  const startIdx = readme.indexOf(README_START_MARKER);
-  const endIdx = readme.indexOf(README_END_MARKER);
+export function updateFlagTable(doc: string, table: string): string {
+  const startIdx = doc.indexOf(TABLE_START_MARKER);
+  const endIdx = doc.indexOf(TABLE_END_MARKER);
   if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
-    throw new Error(
-      `README must contain "${README_START_MARKER}" and "${README_END_MARKER}" markers`,
-    );
+    throw new Error(`File must contain "${TABLE_START_MARKER}" and "${TABLE_END_MARKER}" markers`);
   }
-  const before = readme.slice(0, startIdx + README_START_MARKER.length);
-  const after = readme.slice(endIdx);
+  const before = doc.slice(0, startIdx + TABLE_START_MARKER.length);
+  const after = doc.slice(endIdx);
   return `${before}\n${table}\n${after}`;
 }
 

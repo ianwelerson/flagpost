@@ -2,7 +2,7 @@
 
 # 🤖 @flagpost/action
 
-**GitHub Action that powers a [flagpost](https://github.com/ianwelerson/flagpost) flag repo - validates flag YAML, compiles `flags.json`, and keeps the README flag table fresh.**
+**GitHub Action that powers a [flagpost](https://github.com/ianwelerson/flagpost) flag repo - validates flag YAML, compiles `flags.json`, and keeps the auto-updated flag table fresh.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ianwelerson/flagpost/blob/develop/LICENSE)
 [![Node](https://img.shields.io/badge/node-20-brightgreen)](https://nodejs.org)
@@ -79,7 +79,7 @@ That's it. The action handles everything else.
 | Mode       | When to use       | What it does                                                                                                          |
 | ---------- | ----------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `validate` | On PRs            | Parses every `flags/*.yml`, validates against the schema, fails the job on any error. Read-only.                      |
-| `build`    | On push to `main` | Re-runs validation, compiles `flags.json`, refreshes the README flag table, and commits + pushes if anything changed. |
+| `build`    | On push to `main` | Re-runs validation, compiles `flags.json`, refreshes the flag table in `FLAGS.md`, and commits + pushes if anything changed. |
 
 ---
 
@@ -90,7 +90,7 @@ That's it. The action handles everything else.
 | `mode`              | ✅       | -                                                       | `validate` or `build`                    |
 | `flags-dir`         |          | `flags`                                                 | Directory containing per-flag YAML files |
 | `output-path`       |          | `flags.json`                                            | Where the compiled artifact is written   |
-| `readme-path`       |          | `README.md`                                             | README to update with the flag table     |
+| `table-path`        |          | `FLAGS.md`                                              | Markdown file whose flag table is regenerated between the markers |
 | `commit-message`    |          | `chore(flagpost): update compiled flags`                | Commit message used in build mode        |
 | `commit-user-name`  |          | `github-actions[bot]`                                   | Git author name                          |
 | `commit-user-email` |          | `41898282+github-actions[bot]@users.noreply.github.com` | Git author email                         |
@@ -119,12 +119,12 @@ Use them in downstream steps:
 
 ---
 
-## 📝 README markers
+## 📝 Flag table markers
 
-In build mode, the action replaces the contents between two HTML-comment markers in your README:
+In build mode, the action replaces the contents between two HTML-comment markers in the file pointed to by `table-path` (default: `FLAGS.md`):
 
 ```markdown
-## Flags
+# Flags
 
 <!-- flagpost:flags-table:start -->
 
@@ -133,7 +133,9 @@ In build mode, the action replaces the contents between two HTML-comment markers
 <!-- flagpost:flags-table:end -->
 ```
 
-If the markers are missing, the README update is **skipped with a warning** - the rest of the build still runs.
+The default keeps the flag table out of your project `README.md` so it doesn't bury other content. Point `table-path` at `README.md` (or anywhere else) if you'd rather have it inline.
+
+If the markers are missing, the table update is **skipped with a warning** - the rest of the build still runs.
 
 The generated table looks like:
 

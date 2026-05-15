@@ -79,16 +79,16 @@ jobs:
           mode: build
 ```
 
-This runs on every merge to your default branch. The action validates, compiles `flags.json`, refreshes the README table, and pushes the updates if anything changed.
+This runs on every merge to your default branch. The action validates, compiles `flags.json`, refreshes the flag table in `FLAGS.md`, and pushes the updates if anything changed.
 
 **The `contents: write` permission is required** - without it, the action can't commit. The default `GITHUB_TOKEN` is used for the push, so you don't need to provide your own.
 
-## 5. (Optional) Add the README table markers
+## 5. Add the flag-table file
 
-If you want an auto-generated flag table in the README, add the markers:
+By default the action writes the auto-generated flag table into `FLAGS.md` at the repo root. Create the file with the markers:
 
 ```markdown
-## Flags
+# Flags
 
 <!-- flagpost:flags-table:start -->
 _(this region is regenerated on every build)_
@@ -97,7 +97,9 @@ _(this region is regenerated on every build)_
 
 The build workflow replaces everything between those markers with a sorted markdown table of flag name, status, description, and owner.
 
-If the markers are missing, the README update is skipped with a warning - the rest of the build still runs.
+If the markers are missing, the table update is skipped with a warning - the rest of the build still runs. So this step is technically optional (the action won't fail without it), but you almost always want the table.
+
+Want the table in your project README instead? Skip `FLAGS.md`, add the markers to `README.md`, and set `table-path: README.md` in step 6.
 
 ## 6. (Optional) Customize the inputs
 
@@ -109,7 +111,7 @@ The action takes a few inputs in case your layout differs from the defaults:
     mode: build
     flags-dir: config/flags          # default: flags
     output-path: public/flags.json   # default: flags.json
-    readme-path: docs/FLAGS.md       # default: README.md
+    table-path: docs/FLAGS.md        # default: FLAGS.md
     commit-message: "chore: rebuild flags"
 ```
 

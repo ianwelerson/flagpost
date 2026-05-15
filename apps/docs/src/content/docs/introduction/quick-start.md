@@ -33,7 +33,7 @@ description: Roll out the redesigned checkout
 owner: "@you"
 ```
 
-Open a PR. The `validate` workflow runs the schema check. Merge it. The `build` workflow compiles `flags.json` and updates the README's flag table.
+Open a PR. The `validate` workflow runs the schema check. Merge it. The `build` workflow compiles `flags.json` and updates the flag table in `FLAGS.md`.
 
 ## 3. Install the SDK
 

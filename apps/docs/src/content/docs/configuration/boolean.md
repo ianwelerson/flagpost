@@ -25,7 +25,7 @@ When `enabled: true`, every caller gets `true`. When `enabled: false`, every cal
 
 ## Optional metadata
 
-A boolean flag can still carry descriptive fields - they show up in the auto-updated README table:
+A boolean flag can still carry descriptive fields - they show up in the auto-updated flag table:
 
 ```yaml
 name: dark-mode
@@ -36,7 +36,7 @@ owner: "@design"
 
 | Field | Limit | Purpose |
 |---|---|---|
-| `description` | 280 chars | Human-readable summary, shows in the README table |
+| `description` | 280 chars | Human-readable summary, shows in the flag table |
 | `owner` | 64 chars | Free-form owner string (`@person`, `@team`, etc.) |
 
 ## When to use this

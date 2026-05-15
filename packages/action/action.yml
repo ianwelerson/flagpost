@@ -7,7 +7,7 @@ branding:
 
 inputs:
   mode:
-    description: 'Operation: "validate" (PR check) or "build" (compile flags.json + update README and commit).'
+    description: 'Operation: "validate" (PR check) or "build" (compile flags.json + update flag table and commit).'
     required: true
   flags-dir:
     description: Directory containing per-flag YAML files.
@@ -17,10 +17,10 @@ inputs:
     description: Path the compiled flags.json is written to.
     required: false
     default: flags.json
-  readme-path:
-    description: Path to the README.md to update with the flag table.
+  table-path:
+    description: Path to the markdown file whose flag table is regenerated between the flagpost markers. Defaults to FLAGS.md so the table lives outside the project README.
     required: false
-    default: README.md
+    default: FLAGS.md
   commit-message:
     description: Commit message used when build mode pushes changes.
     required: false

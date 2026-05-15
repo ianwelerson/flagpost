@@ -10,7 +10,7 @@ The `@flagpost/action` GitHub Action is the engine that runs inside your flag re
 | Mode | When to run it | What it does |
 |---|---|---|
 | **`validate`** | Pull requests | Parses every `flags/*.yml`, validates against the schema, fails the job on any error. Read-only. |
-| **`build`** | Push to your default branch | Re-runs validation, compiles `flags.json`, refreshes the README flag table, commits + pushes if anything changed. |
+| **`build`** | Push to your default branch | Re-runs validation, compiles `flags.json`, refreshes the flag table in `FLAGS.md`, commits + pushes if anything changed. |
 
 You don't need both in every repo, but the common case is to use both: validation to gate PRs, build to publish the artifact after merge.
 
@@ -73,8 +73,8 @@ In build mode the action:
 
 1. Re-runs all validate-mode checks (fails the job on schema errors)
 2. Compiles `flags/*.yml` into a single `flags.json` (sorted keys, deterministic output)
-3. If the README has the [table markers](#readme-markers), refreshes the flag table
-4. Stages `flags.json` and `README.md`
+3. If the file at `table-path` has the [flag table markers](#flag-table-markers), refreshes the flag table inside it
+4. Stages `flags.json` and the `table-path` file
 5. Commits with the configured author + message **only if anything changed** (no empty commits)
 6. Pushes
 
@@ -89,7 +89,7 @@ The default `GITHUB_TOKEN` is used for the push - no secret to manage.
 | `mode` | yes | - | `validate` or `build` |
 | `flags-dir` | no | `flags` | Directory containing per-flag YAML files |
 | `output-path` | no | `flags.json` | Where the compiled artifact is written |
-| `readme-path` | no | `README.md` | README to update with the flag table |
+| `table-path` | no | `FLAGS.md` | Markdown file whose flag table is regenerated between the markers |
 | `commit-message` | no | `chore(flagpost): update compiled flags` | Commit message used in build mode |
 | `commit-user-name` | no | `github-actions[bot]` | Git author name |
 | `commit-user-email` | no | `41898282+github-actions[bot]@users.noreply.github.com` | Git author email |
@@ -116,12 +116,12 @@ Use them in downstream steps:
   run: ./scripts/notify.sh "${{ steps.flagpost.outputs.flag-count }} flags updated"
 ```
 
-## README markers
+## Flag table markers
 
-In build mode, the action replaces the content between two HTML-comment markers in the README:
+In build mode, the action replaces the content between two HTML-comment markers in the file pointed to by `table-path` (default: `FLAGS.md`):
 
 ```markdown
-## Flags
+# Flags
 
 <!-- flagpost:flags-table:start -->
 _(regenerated on every build)_
@@ -135,7 +135,9 @@ The generated table looks like:
 | `dark-mode` | ✅ | Enable dark mode UI | @you |
 | `new-checkout` | ❌ | Roll out the redesigned checkout | @you |
 
-If the markers are missing, the README update is **skipped with a warning** - the rest of the build still runs. So you can opt out of the README table by simply not including the markers.
+If the markers are missing, the table update is **skipped with a warning** - the rest of the build still runs. So you can opt out of the table by simply not including the markers.
+
+Want the table inline with your project README instead? Set `table-path: README.md` and add the markers there.
 
 ## Pinning the action version
 

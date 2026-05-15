@@ -10,7 +10,7 @@ description: Inputs and outputs of the @flagpost/action GitHub Action.
 | `mode` | yes | - | `validate` or `build` |
 | `flags-dir` | no | `flags` | Directory containing per-flag YAML files |
 | `output-path` | no | `flags.json` | Where the compiled artifact is written |
-| `readme-path` | no | `README.md` | README to update with the flag table |
+| `table-path` | no | `FLAGS.md` | Markdown file whose flag table is regenerated between the markers |
 | `commit-message` | no | `chore(flagpost): update compiled flags` | Commit message used in build mode |
 | `commit-user-name` | no | `github-actions[bot]` | Git author name |
 | `commit-user-email` | no | `41898282+github-actions[bot]@users.noreply.github.com` | Git author email |
@@ -27,11 +27,11 @@ description: Inputs and outputs of the @flagpost/action GitHub Action.
 | Mode | When | What it does |
 |---|---|---|
 | `validate` | PRs | Parses every `flags/*.yml`, validates the schema, fails on any error. Read-only. |
-| `build` | Push to main | Validates, compiles `flags.json`, updates the README table, commits + pushes if anything changed. |
+| `build` | Push to main | Validates, compiles `flags.json`, updates the flag-table file, commits + pushes if anything changed. |
 
-## README markers
+## Flag table markers
 
-In build mode, the action replaces content between two HTML-comment markers:
+In build mode, the action replaces content between two HTML-comment markers inside the file pointed to by `table-path` (default: `FLAGS.md`):
 
 ```markdown
 <!-- flagpost:flags-table:start -->
@@ -39,7 +39,9 @@ In build mode, the action replaces content between two HTML-comment markers:
 <!-- flagpost:flags-table:end -->
 ```
 
-If the markers are missing, the README update is skipped with a warning. The rest of the build still runs.
+If the markers are missing, the table update is skipped with a warning. The rest of the build still runs.
+
+The default `FLAGS.md` keeps the table out of your project `README.md`. If you'd rather have the table in the README, set `table-path: README.md`.
 
 ## Validation rules
 
