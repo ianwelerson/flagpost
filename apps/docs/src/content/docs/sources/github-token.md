@@ -58,9 +58,16 @@ const flagpost = new Flagpost({
 
 ## Rate limits
 
-| Token type | Limit |
-|---|---|
-| No token (public repo) | 60 requests/hour per IP |
-| Authenticated PAT | 5,000 requests/hour per token |
+The SDK takes two different paths depending on whether you pass a token:
 
-With the default 60-second `cacheTTL`, one SDK instance polls ~60 times/hour. A 5,000/hour budget covers ~80 instances sharing a token comfortably. For larger fleets, increase `cacheTTL` or use per-environment tokens.
+| Mode | Endpoint | Limit |
+|---|---|---|
+| No token (public repo) | `raw.githubusercontent.com` (CDN) | No documented per-IP cap. The CDN caches branch refs for ~5 min at edge. |
+| Authenticated PAT | `api.github.com` Contents API | 5,000 requests/hour per token |
+
+Two important details:
+
+- **Public repos are effectively free.** Unauthenticated reads hit the raw CDN, not the rate-limited REST API. The tradeoff is that the CDN caches mutable refs (branches) for a few minutes - if you want near-instant flag updates on a public repo, pin `ref` to a tag or commit SHA, which the CDN treats as immutable.
+- **`If-None-Match` revalidation is automatic.** The SDK stores the `ETag` from each successful response and sends it on the next poll. GitHub returns `304 Not Modified` when nothing changed, which **does not consume your primary rate limit**. In practice, a long-lived authenticated SDK instance polling an unchanged `flags.json` costs ~0 against the 5,000/hr budget.
+
+With the default 60-second `cacheTTL`, one SDK instance polls ~60 times/hour. Combined with ETag revalidation, a single PAT comfortably covers hundreds of instances against an unchanged file. For larger fleets, increase `cacheTTL` or use per-environment tokens.

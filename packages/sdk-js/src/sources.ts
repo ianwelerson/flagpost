@@ -36,14 +36,27 @@ function createGithubLoader(source: Extract<FlagsSource, { type: 'github' }>): S
   if (!source.repo) {
     throw new FlagpostError('GitHub source requires a `repo` (e.g. "owner/name")');
   }
-  return () =>
-    fetchFlags({
+  let etag: string | undefined;
+  let lastFlags: CompiledFlags | undefined;
+  return async () => {
+    const result = await fetchFlags({
       repo: source.repo,
       ref: source.ref ?? 'main',
       path: source.path ?? 'flags.json',
       token: source.token,
+      etag,
       fetch: fetchImpl,
     });
+    if (result.notModified) {
+      // 304 means flags are unchanged since the etag we sent - we must have a cached payload
+      // (we only send If-None-Match after a successful prior fetch).
+      etag = result.etag;
+      return lastFlags as CompiledFlags;
+    }
+    etag = result.etag;
+    lastFlags = result.flags;
+    return result.flags;
+  };
 }
 
 function createMemoryLoader(source: Extract<FlagsSource, { type: 'memory' }>): SourceLoader {

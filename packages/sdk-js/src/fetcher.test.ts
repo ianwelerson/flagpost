@@ -25,7 +25,7 @@ describe('fetchFlags', () => {
     ).rejects.toThrow(FlagpostFetchError);
   });
 
-  it('builds the correct GitHub API URL', async () => {
+  it('uses raw.githubusercontent.com when no token is provided', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(validPayload));
     await fetchFlags({
       repo: 'ianwelerson/my-flags',
@@ -34,6 +34,19 @@ describe('fetchFlags', () => {
       fetch: fetchMock,
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    const call = fetchMock.mock.calls[0]!;
+    expect(call[0]).toBe('https://raw.githubusercontent.com/ianwelerson/my-flags/main/flags.json');
+  });
+
+  it('uses the GitHub Contents API when a token is provided', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(validPayload));
+    await fetchFlags({
+      repo: 'ianwelerson/my-flags',
+      ref: 'main',
+      path: 'flags.json',
+      token: 'ghp_secret',
+      fetch: fetchMock,
+    });
     const call = fetchMock.mock.calls[0]!;
     expect(call[0]).toBe(
       'https://api.github.com/repos/ianwelerson/my-flags/contents/flags.json?ref=main',
@@ -64,6 +77,60 @@ describe('fetchFlags', () => {
     });
     const init = fetchMock.mock.calls[0]![1];
     expect(init.headers.Authorization).toBeUndefined();
+  });
+
+  it('sends If-None-Match when an etag is provided', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(validPayload));
+    await fetchFlags({
+      repo: 'a/b',
+      ref: 'main',
+      path: 'flags.json',
+      etag: '"abc123"',
+      fetch: fetchMock,
+    });
+    const init = fetchMock.mock.calls[0]![1];
+    expect(init.headers['If-None-Match']).toBe('"abc123"');
+  });
+
+  it('returns notModified on a 304 response', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 304 }));
+    const result = await fetchFlags({
+      repo: 'a/b',
+      ref: 'main',
+      path: 'flags.json',
+      etag: '"abc123"',
+      fetch: fetchMock,
+    });
+    expect(result).toEqual({ notModified: true, etag: '"abc123"' });
+  });
+
+  it('returns the etag from a successful response', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(validPayload), {
+        status: 200,
+        headers: { 'content-type': 'application/json', etag: '"new-etag"' },
+      }),
+    );
+    const result = await fetchFlags({
+      repo: 'a/b',
+      ref: 'main',
+      path: 'flags.json',
+      fetch: fetchMock,
+    });
+    expect(result.notModified).toBe(false);
+    if (!result.notModified) {
+      expect(result.etag).toBe('"new-etag"');
+      expect(result.flags.flags['dark-mode']?.enabled).toBe(true);
+    }
+  });
+
+  it('treats 304 without a sent etag as an error', async () => {
+    // Defensive: a bare 304 with no If-None-Match shouldn't happen, but if it does we surface it
+    // as a normal HTTP error rather than silently returning notModified.
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 304 }));
+    await expect(
+      fetchFlags({ repo: 'a/b', ref: 'main', path: 'flags.json', fetch: fetchMock }),
+    ).rejects.toThrow(FlagpostFetchError);
   });
 
   it('throws on non-2xx response', async () => {
@@ -170,7 +237,20 @@ describe('fetchFlags', () => {
     }
   });
 
-  it('encodes special characters in path and ref', async () => {
+  it('encodes special characters in path and ref for the API URL', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(validPayload));
+    await fetchFlags({
+      repo: 'a/b',
+      ref: 'feature/x',
+      path: 'dist/flags.json',
+      token: 'x',
+      fetch: fetchMock,
+    });
+    const url = fetchMock.mock.calls[0]![0];
+    expect(url).toBe('https://api.github.com/repos/a/b/contents/dist%2Fflags.json?ref=feature%2Fx');
+  });
+
+  it('preserves slashes in the raw CDN URL while encoding segments', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(validPayload));
     await fetchFlags({
       repo: 'a/b',
@@ -179,6 +259,6 @@ describe('fetchFlags', () => {
       fetch: fetchMock,
     });
     const url = fetchMock.mock.calls[0]![0];
-    expect(url).toBe('https://api.github.com/repos/a/b/contents/dist%2Fflags.json?ref=feature%2Fx');
+    expect(url).toBe('https://raw.githubusercontent.com/a/b/feature/x/dist/flags.json');
   });
 });

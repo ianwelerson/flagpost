@@ -6,26 +6,33 @@ export interface FetcherOptions {
   ref: string;
   path: string;
   token?: string;
+  etag?: string;
   fetch: typeof fetch;
 }
 
+export type FetchResult =
+  | { notModified: true; etag: string }
+  | { notModified: false; flags: CompiledFlags; etag?: string };
+
 const REPO_PATTERN = /^[\w.-]+\/[\w.-]+$/;
 
-export async function fetchFlags(opts: FetcherOptions): Promise<CompiledFlags> {
+export async function fetchFlags(opts: FetcherOptions): Promise<FetchResult> {
   if (!REPO_PATTERN.test(opts.repo)) {
     throw new FlagpostFetchError(`Invalid repo "${opts.repo}". Expected format: "owner/name".`);
   }
 
-  const url = `https://api.github.com/repos/${opts.repo}/contents/${encodeURIComponent(
-    opts.path,
-  )}?ref=${encodeURIComponent(opts.ref)}`;
+  // With a token we hit the authenticated REST API (5,000 req/hr/token).
+  // Without one we hit the raw CDN, which isn't subject to the 60 req/hr unauthenticated API limit.
+  const url = opts.token ? buildApiUrl(opts) : buildRawUrl(opts);
 
-  const headers: Record<string, string> = {
-    Accept: 'application/vnd.github.raw',
-    'X-GitHub-Api-Version': '2022-11-28',
-  };
+  const headers: Record<string, string> = {};
   if (opts.token) {
+    headers.Accept = 'application/vnd.github.raw';
+    headers['X-GitHub-Api-Version'] = '2022-11-28';
     headers.Authorization = `Bearer ${opts.token}`;
+  }
+  if (opts.etag) {
+    headers['If-None-Match'] = opts.etag;
   }
 
   let response: Response;
@@ -36,6 +43,10 @@ export async function fetchFlags(opts: FetcherOptions): Promise<CompiledFlags> {
     // carry the token (which is held in `headers`, but defense-in-depth).
     const detail = err instanceof Error ? err.message : 'unknown error';
     throw new FlagpostFetchError(`Network error fetching flags from ${opts.repo}: ${detail}`);
+  }
+
+  if (response.status === 304 && opts.etag) {
+    return { notModified: true, etag: opts.etag };
   }
 
   if (!response.ok) {
@@ -63,7 +74,28 @@ export async function fetchFlags(opts: FetcherOptions): Promise<CompiledFlags> {
       issues,
     );
   }
-  return result.data;
+  return {
+    notModified: false,
+    flags: result.data,
+    etag: response.headers.get('etag') ?? undefined,
+  };
+}
+
+function buildApiUrl(opts: FetcherOptions): string {
+  return `https://api.github.com/repos/${opts.repo}/contents/${encodeURIComponent(
+    opts.path,
+  )}?ref=${encodeURIComponent(opts.ref)}`;
+}
+
+function buildRawUrl(opts: FetcherOptions): string {
+  // raw.githubusercontent.com expects slashes preserved between segments, so encode each segment.
+  return `https://raw.githubusercontent.com/${opts.repo}/${encodePathSegments(
+    opts.ref,
+  )}/${encodePathSegments(opts.path)}`;
+}
+
+function encodePathSegments(value: string): string {
+  return value.split('/').map(encodeURIComponent).join('/');
 }
 
 function messageForStatus(

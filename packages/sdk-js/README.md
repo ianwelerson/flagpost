@@ -288,7 +288,12 @@ flagpost is designed to be **infrastructure-free**. A push model would require a
 <details>
 <summary><strong>Won't this hit GitHub rate limits?</strong></summary>
 
-Authenticated requests get **5,000/hr per token**. With the default 60-second cache TTL, a single client polls 60 times/hour. You'd need 80+ clients sharing a token to come close. For larger deployments, increase `cacheTTL` or use a per-environment token.
+Rarely. The SDK picks the cheapest path automatically:
+
+- **Public repos, no token:** reads go to `raw.githubusercontent.com` (CDN), which isn't subject to the 60 req/hr unauthenticated REST limit.
+- **With a token:** authenticated REST gets **5,000/hr per token**. The SDK also sends `If-None-Match` with the previous `ETag` on each refresh, so unchanged-file polls return `304` and don't consume your primary rate-limit budget.
+
+With the default 60-second cache TTL, a single client polls 60 times/hour. Combined with ETag revalidation, a single PAT comfortably covers hundreds of clients against an unchanged file. For larger deployments, increase `cacheTTL` or use a per-environment token.
 
 </details>
 

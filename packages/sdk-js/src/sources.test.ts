@@ -85,7 +85,7 @@ describe('createLoader - github', () => {
     expect(() => createLoader({ type: 'github', repo: '', fetch: vi.fn() })).toThrow(FlagpostError);
   });
 
-  it('passes through to fetchFlags with defaults', async () => {
+  it('passes through to fetchFlags with defaults (raw CDN when unauthenticated)', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify(validPayload), {
         status: 200,
@@ -96,7 +96,7 @@ describe('createLoader - github', () => {
     await loader();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const url = fetchMock.mock.calls[0]?.[0];
-    expect(url).toContain('https://api.github.com/repos/a/b/contents/flags.json?ref=main');
+    expect(url).toBe('https://raw.githubusercontent.com/a/b/main/flags.json');
   });
 
   it('respects custom ref and path', async () => {
@@ -111,10 +111,33 @@ describe('createLoader - github', () => {
       repo: 'a/b',
       ref: 'release',
       path: 'dist/flags.json',
+      token: 'ghp_x',
       fetch: fetchMock,
     });
     await loader();
     const url = fetchMock.mock.calls[0]?.[0];
     expect(url).toBe('https://api.github.com/repos/a/b/contents/dist%2Fflags.json?ref=release');
+  });
+
+  it('reuses cached flags when GitHub returns 304', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(validPayload), {
+          status: 200,
+          headers: { 'content-type': 'application/json', etag: '"v1"' },
+        }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 304, headers: { etag: '"v1"' } }));
+
+    const loader = createLoader({ type: 'github', repo: 'a/b', fetch: fetchMock });
+
+    const first = await loader();
+    expect(first.flags['dark-mode']?.enabled).toBe(true);
+    expect(fetchMock.mock.calls[0]?.[1]?.headers['If-None-Match']).toBeUndefined();
+
+    const second = await loader();
+    expect(second).toBe(first); // identical cached object
+    expect(fetchMock.mock.calls[1]?.[1]?.headers['If-None-Match']).toBe('"v1"');
   });
 });

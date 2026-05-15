@@ -3,7 +3,7 @@ title: GitHub repo source
 description: The default flagpost source - reads a compiled flags.json from a GitHub repository over the API.
 ---
 
-The `github` source is the default. The SDK fetches `flags.json` from the repo via the GitHub Contents API, caches it for `cacheTTL` ms, and refreshes in the background when stale.
+The `github` source is the default. The SDK fetches `flags.json` from the repo, caches it for `cacheTTL` ms, and refreshes in the background when stale. With a token it uses the authenticated GitHub Contents API; without one it uses `raw.githubusercontent.com` so unauthenticated public-repo reads aren't subject to the 60 req/hr REST API limit.
 
 ## Basic usage
 
@@ -56,7 +56,9 @@ new Flagpost({
 
 ## Public repos
 
-If your flag repo is public, the `token` is optional - but rate limits are tighter (60 requests/hour per IP vs. 5000/hour per token). For anything beyond a personal toy, even a public repo benefits from an unauthenticated rate-limit-friendly cache (longer `cacheTTL`) or a token.
+If your flag repo is public, the `token` is optional. The SDK reads from `raw.githubusercontent.com`, which is CDN-backed and not subject to the 60 req/hr unauthenticated REST API limit.
+
+The tradeoff is CDN staleness: the raw CDN caches mutable refs (branches) at the edge for around 5 minutes. If you need faster propagation, pin `ref` to a tag or commit SHA - the CDN treats those as immutable and serves them with much longer caching, but updates only ever come from changing the ref. Most users are fine on `main` with a few minutes of lag.
 
 ## Private repos
 
@@ -68,6 +70,7 @@ For private repos, the token is required. The minimum permission is **Contents: 
 - When the snapshot ages past `cacheTTL` (default 60 seconds), the **next** `isEnabled` call returns the stale value immediately and triggers a background refresh.
 - Concurrent `load()` calls are **coalesced** - only one fetch in flight at a time.
 - Background refresh failures invoke `onRefreshError` if you provided one; otherwise the next stale read retries.
+- Refreshes send `If-None-Match` with the previous `ETag`. When nothing has changed, GitHub returns `304` and the SDK reuses the cached payload. On the authenticated REST path, `304` responses don't consume your primary rate limit budget.
 
 ```ts
 new Flagpost({
