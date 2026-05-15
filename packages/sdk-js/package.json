@@ -32,12 +32,14 @@
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@flagpost/core": "workspace:*"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.4",
     "tsup": "^8.3.0",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"

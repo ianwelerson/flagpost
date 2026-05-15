@@ -4,7 +4,7 @@
 
 ## The pitch
 
-Most feature flag tools require an account, a hosted dashboard, and a paid tier once you outgrow the free quota. For small teams and side projects, that's overkill — you already have GitHub, you already do code review, you already have an audit log.
+Most feature flag tools require an account, a hosted dashboard, and a paid tier once you outgrow the free quota. For small teams and side projects, that's overkill - you already have GitHub, you already do code review, you already have an audit log.
 
 **flagpost** is a template repository (à la [upptime](https://upptime.js.org)) that turns a GitHub repo into a feature flag backend:
 
@@ -17,8 +17,8 @@ No server to host. No account to create. No dashboard to pay for. The repo *is* 
 
 ## Inspiration
 
-- [upptime](https://github.com/upptime/upptime) — uptime monitor as a GitHub repo + Actions
-- [This gist](https://gist.github.com/porthunt/b994154c054deeab7ab4073273aa75bc) — pattern for fetching files from a private repo with a PAT
+- [upptime](https://github.com/upptime/upptime) - uptime monitor as a GitHub repo + Actions
+- [This gist](https://gist.github.com/porthunt/b994154c054deeab7ab4073273aa75bc) - pattern for fetching files from a private repo with a PAT
 
 ## How it works (v1)
 
@@ -45,7 +45,7 @@ description: New checkout flow rollout
 owner: @ianwelerson
 ```
 
-v1 is **boolean only** — `enabled: true | false`. Percentage rollout, targeting rules, and environments come later.
+v1 is **boolean only** - `enabled: true | false`. Percentage rollout, targeting rules, and environments come later.
 
 ### 3. Changes go through PRs
 
@@ -80,13 +80,13 @@ A GitHub Action regenerates a markdown table in the README on every flag change:
 | new-checkout | ✅ | @ianwelerson | 2d ago |
 | dark-mode | ❌ | @ianwelerson | 1w ago |
 
-Only repo collaborators can see it — no public Pages site, no leak of unreleased feature names.
+Only repo collaborators can see it - no public Pages site, no leak of unreleased feature names.
 
 ## Why no public dashboard
 
 Flag names alone often telegraph unreleased work (`checkout-v2-redesign`, `ai-summary-beta`). For a private-first tool, a public GitHub Pages dashboard would be a real leak. The private README table covers the "I want to glance at all flags" need without that risk. A local-only CLI dashboard (`flagpost ui`) is a possible future addition.
 
-## SDK and CLI — how they fit together
+## SDK and CLI - how they fit together
 
 The project has three pieces of code that surround the flag repo:
 
@@ -118,7 +118,7 @@ The project has three pieces of code that surround the flag repo:
 └─────────────────┘
 ```
 
-### SDK — runtime library
+### SDK - runtime library
 
 What the user installs in their **application** to read flags at runtime.
 
@@ -146,9 +146,9 @@ Responsibilities:
 
 #### Local overrides
 
-Two ways to override flag values without changing what's in the repo — for local dev, tests, or environment-specific behavior:
+Two ways to override flag values without changing what's in the repo - for local dev, tests, or environment-specific behavior:
 
-**Static map** — most common case:
+**Static map** - most common case:
 
 ```js
 new Flagpost({
@@ -161,7 +161,7 @@ new Flagpost({
 });
 ```
 
-**Function** — for dynamic conditions:
+**Function** - for dynamic conditions:
 
 ```js
 new Flagpost({
@@ -179,11 +179,11 @@ new Flagpost({
 
 **Resolution order:** function override → static `overrides` map → fetched flag value. Returning `undefined` from the function (or not handling a flag in the map) falls through to the next layer.
 
-This also makes **testing trivial** — pass `overrides` in test setup, no SDK mocking needed.
+This also makes **testing trivial** - pass `overrides` in test setup, no SDK mocking needed.
 
 **Possible convention** (open question): auto-read `FLAGPOST_<NAME>=true|false` env vars when an `envOverrides: true` option is set. Off by default to avoid surprising magic.
 
-### CLI — local dev tooling
+### CLI - local dev tooling
 
 Quality-of-life commands for managing the flag repo. Not required (users can always edit YAML by hand), but speeds up common tasks.
 
@@ -194,11 +194,11 @@ flagpost validate               # run the schema check locally (same as the Acti
 ```
 
 Deferred:
-- `flagpost list` — print all flags + state to terminal
-- `flagpost build` — compile YAML → JSON locally (Action handles this in v1)
-- `flagpost generate-types` — emit `flags.d.ts` for typed SDK lookups (v2)
+- `flagpost list` - print all flags + state to terminal
+- `flagpost build` - compile YAML → JSON locally (Action handles this in v1)
+- `flagpost generate-types` - emit `flags.d.ts` for typed SDK lookups (v2)
 
-### GitHub Action — CI automation
+### GitHub Action - CI automation
 
 Runs in the flag repo on every PR and merge:
 - Validates flag schema on PRs
@@ -226,23 +226,23 @@ Runs in the flag repo on every PR and merge:
 
 ## Open questions to resolve as we build
 
-- **Distribution of flag state to the SDK** — fetch raw YAML files and parse client-side, or have the Action compile a single `flags.json` artifact? Compiled JSON is faster and cheaper on rate limits; raw files are simpler. Lean: compiled JSON committed to the repo (or pushed to a `dist` branch).
-- **PAT scope guidance** — what's the minimum scope users need to grant? Document this clearly to keep the security story tight.
-- **Rate limits** — GitHub's raw content endpoint has limits. SDK caching mitigates, but document the math (X servers × Y polls/min vs. limit).
-- **SDK caching strategy** — in-memory only for v1, or pluggable (Redis, file)?
+- **Distribution of flag state to the SDK** - fetch raw YAML files and parse client-side, or have the Action compile a single `flags.json` artifact? Compiled JSON is faster and cheaper on rate limits; raw files are simpler. Lean: compiled JSON committed to the repo (or pushed to a `dist` branch).
+- **PAT scope guidance** - what's the minimum scope users need to grant? Document this clearly to keep the security story tight.
+- **Rate limits** - GitHub's raw content endpoint has limits. SDK caching mitigates, but document the math (X servers × Y polls/min vs. limit).
+- **SDK caching strategy** - in-memory only for v1, or pluggable (Redis, file)?
 - **What does `flagpost init` look like?** Is there a CLI that scaffolds a new flag file, or do users just copy an existing one?
 
 ## Open questions for later versions
 
-- v2: percentage rollout — needs deterministic hashing of a user identifier
-- v2: environments — separate files per env (`flags/prod/`, `flags/dev/`) or a field inside each flag?
+- v2: percentage rollout - needs deterministic hashing of a user identifier
+- v2: environments - separate files per env (`flags/prod/`, `flags/dev/`) or a field inside each flag?
 - When does it make sense to add a server-side evaluation option for teams that don't want to ship a PAT to clients?
 
 ## Naming & ownership
 
 | Surface | Name | Status |
 |---|---|---|
-| Project | flagpost | — |
+| Project | flagpost | - |
 | Code repo (monorepo) | [github.com/ianwelerson/flagpost](https://github.com/ianwelerson/flagpost) | created |
 | Template repo (fork target) | [github.com/ianwelerson/flagpost-template](https://github.com/ianwelerson/flagpost-template) | created |
 | npm scope | `@flagpost` | reserved |
@@ -251,14 +251,14 @@ Runs in the flag repo on every PR and merge:
 
 **Why this split:**
 - Code lives under `ianwelerson/` for portfolio visibility while the project is early. GitHub redirects forever after a transfer, so moving to `flagpost-dev/` later won't break URLs, clones, or "Use this template" links.
-- npm scope is `@flagpost` from day one — packages stay stable across any GitHub org change, so users never have to update their `package.json`.
+- npm scope is `@flagpost` from day one - packages stay stable across any GitHub org change, so users never have to update their `package.json`.
 - Domain `flagpost.dev` aligns with the future GitHub org `flagpost-dev` for a single coherent identity.
 
 **Package names:**
-- `@flagpost/core` — shared schema & types
-- `@flagpost/sdk-js` — JS runtime SDK
-- `@flagpost/cli` — local dev tooling
-- `@flagpost/action` — GitHub Action (also published to GitHub Marketplace)
+- `@flagpost/core` - shared schema & types
+- `@flagpost/sdk-js` - JS runtime SDK
+- `@flagpost/cli` - local dev tooling
+- `@flagpost/action` - GitHub Action (also published to GitHub Marketplace)
 
 **Repo structure** (in `ianwelerson/flagpost`, pnpm workspaces):
 ```
@@ -269,4 +269,4 @@ packages/
 └── action/    → @flagpost/action
 ```
 
-The template repo (`ianwelerson/flagpost-template`) stays separate — it's the "Use this template" target and contains only `flags/`, a workflow that references `@flagpost/action`, and a starter README.
+The template repo (`ianwelerson/flagpost-template`) stays separate - it's the "Use this template" target and contains only `flags/`, a workflow that references `@flagpost/action`, and a starter README.

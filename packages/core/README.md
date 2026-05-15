@@ -2,7 +2,7 @@
 
 # 🧩 @flagpost/core
 
-**Shared schema and types for [flagpost](https://github.com/ianwelerson/flagpost) — the source of truth for what a flag looks like.**
+**Shared schema and types for [flagpost](https://github.com/ianwelerson/flagpost) - the source of truth for what a flag looks like.**
 
 [![npm version](https://img.shields.io/npm/v/@flagpost/core.svg)](https://www.npmjs.com/package/@flagpost/core)
 [![npm downloads](https://img.shields.io/npm/dm/@flagpost/core.svg)](https://www.npmjs.com/package/@flagpost/core)
@@ -24,7 +24,7 @@
 
 It's consumed by [`@flagpost/sdk-js`](https://www.npmjs.com/package/@flagpost/sdk-js) and [`@flagpost/action`](https://github.com/ianwelerson/flagpost/tree/develop/packages/action).
 
-> 💡 **Most users don't need to install this directly** — it's a building block. Install it only if you're building tooling that reads/writes flag YAML.
+> 💡 **Most users don't need to install this directly** - it's a building block. Install it only if you're building tooling that reads/writes flag YAML.
 
 ---
 
@@ -84,7 +84,7 @@ flagSchema.parse({ name: "foo", enabled: true });
 | `description` | `string`  |          | Optional human-readable description, ≤ 280 chars                         |
 | `owner`       | `string`  |          | Optional owner handle, ≤ 64 chars                                        |
 
-> ⚠️ The schema is **strict** — unknown fields are rejected. This catches typos like `enabld: true` early.
+> ⚠️ The schema is **strict** - unknown fields are rejected. This catches typos like `enabld: true` early.
 
 ---
 

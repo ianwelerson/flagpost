@@ -6,7 +6,16 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": ["dist", "node_modules", "coverage", "**/*.json"]
+    "ignore": [
+      "dist",
+      "node_modules",
+      "coverage",
+      "**/*.json",
+      "apps/docs/.astro",
+      "apps/docs/dist",
+      "apps/docs/src/content/**/*.md",
+      "apps/docs/src/content/**/*.mdx"
+    ]
   },
   "organizeImports": {
     "enabled": true

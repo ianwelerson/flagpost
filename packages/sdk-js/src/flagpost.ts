@@ -1,48 +1,34 @@
 import type { CompiledFlags, Flag } from '@flagpost/core';
 import { FlagpostError, FlagpostNotLoadedError } from './errors.js';
-import { fetchFlags } from './fetcher.js';
+import { type EvaluationContext, evaluateFlag } from './evaluate.js';
 import { resolveFlagValue } from './overrides.js';
-import type { FlagpostOptions, FlagpostState, OverrideFn } from './types.js';
+import { type SourceLoader, createLoader } from './sources.js';
+import type { FlagpostOptions, FlagpostState, FlagsSource, OverrideFn } from './types.js';
 
-const DEFAULT_REF = 'main';
-const DEFAULT_PATH = 'flags.json';
 const DEFAULT_TTL_MS = 60_000;
 
 export class Flagpost {
-  private readonly repo: string;
-  private readonly token: string | undefined;
-  private readonly ref: string;
-  private readonly path: string;
+  private readonly loader: SourceLoader;
   private readonly cacheTTL: number;
-  private readonly fetchImpl: typeof fetch;
   private readonly staticOverrides: Record<string, boolean> | undefined;
   private readonly overrideFn: OverrideFn | undefined;
+  private readonly defaultContext: EvaluationContext;
+  private readonly onRefreshError: ((err: unknown) => void) | undefined;
 
   private state: FlagpostState | null = null;
   private inFlight: Promise<FlagpostState> | null = null;
 
   constructor(options: FlagpostOptions) {
-    if (!options.repo) {
-      throw new FlagpostError('Flagpost requires a `repo` option (e.g. "owner/name")');
-    }
-    this.repo = options.repo;
-    this.token = options.token;
-    this.ref = options.ref ?? DEFAULT_REF;
-    this.path = options.path ?? DEFAULT_PATH;
+    this.loader = createLoader(resolveSource(options));
     this.cacheTTL = options.cacheTTL ?? DEFAULT_TTL_MS;
     this.staticOverrides = options.overrides;
     this.overrideFn = options.override;
-
-    const fetchImpl = options.fetch ?? globalThis.fetch;
-    if (!fetchImpl) {
-      throw new FlagpostError(
-        'No fetch implementation available. Pass `fetch` in options or run on a platform with global `fetch`.',
-      );
-    }
-    this.fetchImpl = fetchImpl;
+    // Shallow-clone so later mutations on the caller's object don't leak in.
+    this.defaultContext = options.defaultContext ? { ...options.defaultContext } : {};
+    this.onRefreshError = options.onRefreshError;
   }
 
-  /** Load (or refresh) the flag state from the remote repo. */
+  /** Load (or refresh) the flag state from the configured source. */
   async load(): Promise<void> {
     await this.fetchAndStore();
   }
@@ -55,16 +41,23 @@ export class Flagpost {
 
   /**
    * Check whether a flag is enabled.
-   * Applies override layers; returns `false` for unknown flags.
+   *
+   * Resolution order:
+   * 1. Function override (if returns a boolean)
+   * 2. Static override map
+   * 3. Evaluated remote flag (boolean, after targeting / rollout / environment selection)
+   * 4. `false` for unknown flags
+   *
    * Triggers a background refresh if the cache is stale.
    */
-  isEnabled(flagName: string): boolean {
-    const remoteValue = this.readRemote(flagName);
+  isEnabled(flagName: string, context: EvaluationContext = {}): boolean {
+    const merged = mergeContext(this.defaultContext, context);
+    const remoteValue = this.evaluateRemote(flagName, merged);
     this.maybeRefreshInBackground();
-    return resolveFlagValue(flagName, remoteValue, this.staticOverrides, this.overrideFn);
+    return resolveFlagValue(flagName, remoteValue, this.staticOverrides, this.overrideFn, merged);
   }
 
-  /** Get the raw flag definition (or `undefined` if unknown). Does not apply overrides. */
+  /** Get the raw flag definition (or `undefined` if unknown). Does not apply overrides or evaluate. */
   getFlag(flagName: string): Flag | undefined {
     if (!this.state) throw new FlagpostNotLoadedError();
     return this.state.flags.flags[flagName];
@@ -86,11 +79,13 @@ export class Flagpost {
     return this.state ? Date.now() - this.state.loadedAt : null;
   }
 
-  private readRemote(flagName: string): boolean | undefined {
+  private evaluateRemote(flagName: string, context: EvaluationContext): boolean | undefined {
     if (!this.hasOverrideFor(flagName) && !this.state) {
       throw new FlagpostNotLoadedError();
     }
-    return this.state?.flags.flags[flagName]?.enabled;
+    const flag = this.state?.flags.flags[flagName];
+    if (!flag) return undefined;
+    return evaluateFlag(flag, context);
   }
 
   private hasOverrideFor(flagName: string): boolean {
@@ -105,8 +100,10 @@ export class Flagpost {
     if (!this.state) return;
     if (this.inFlight) return;
     if (Date.now() - this.state.loadedAt < this.cacheTTL) return;
-    void this.fetchAndStore().catch(() => {
-      // background failures are swallowed; next call will retry
+    void this.fetchAndStore().catch((err) => {
+      // The next stale read will retry. Surface via callback so the host app can log
+      // token expiration / network outages instead of failing silently.
+      this.onRefreshError?.(err);
     });
   }
 
@@ -114,13 +111,7 @@ export class Flagpost {
     if (this.inFlight) return this.inFlight;
     this.inFlight = (async () => {
       try {
-        const flags = await fetchFlags({
-          repo: this.repo,
-          ref: this.ref,
-          path: this.path,
-          token: this.token,
-          fetch: this.fetchImpl,
-        });
+        const flags = await this.loader();
         const next: FlagpostState = { loadedAt: Date.now(), flags };
         this.state = next;
         return next;
@@ -130,4 +121,31 @@ export class Flagpost {
     })();
     return this.inFlight;
   }
+}
+
+function resolveSource(options: FlagpostOptions): FlagsSource {
+  if (options.source) return options.source;
+  // Legacy shape: top-level repo means GitHub source.
+  if (options.repo) {
+    return {
+      type: 'github',
+      repo: options.repo,
+      token: options.token,
+      ref: options.ref,
+      path: options.path,
+      fetch: options.fetch,
+    };
+  }
+  throw new FlagpostError(
+    'Flagpost requires either `source` or a top-level `repo` option (e.g. "owner/name")',
+  );
+}
+
+function mergeContext(base: EvaluationContext, extra: EvaluationContext): EvaluationContext {
+  if (!extra || Object.keys(extra).length === 0) return base;
+  return {
+    userId: extra.userId ?? base.userId,
+    groups: extra.groups ?? base.groups,
+    environment: extra.environment ?? base.environment,
+  };
 }

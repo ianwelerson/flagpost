@@ -2,7 +2,7 @@
 
 # 🤖 @flagpost/action
 
-**GitHub Action that powers a [flagpost](https://github.com/ianwelerson/flagpost) flag repo — validates flag YAML, compiles `flags.json`, and keeps the README flag table fresh.**
+**GitHub Action that powers a [flagpost](https://github.com/ianwelerson/flagpost) flag repo - validates flag YAML, compiles `flags.json`, and keeps the README flag table fresh.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ianwelerson/flagpost/blob/develop/LICENSE)
 [![Node](https://img.shields.io/badge/node-20-brightgreen)](https://nodejs.org)
@@ -13,12 +13,12 @@
 
 ## ✨ Features
 
-- ✅ **Schema validation** — every flag YAML is parsed and validated on PR
-- 🏗️ **Compilation** — produces a single `flags.json` artifact for the SDK to consume
-- 📊 **Auto-updated README table** — your flag dashboard, regenerated on every change
-- 🔁 **Idempotent commits** — only pushes when something actually changed
-- 🔐 **Uses `GITHUB_TOKEN`** — no extra secrets to manage
-- 🪶 **Bundled** — no `node_modules` install at runtime; ships as a single JS file
+- ✅ **Schema validation** - every flag YAML is parsed and validated on PR
+- 🏗️ **Compilation** - produces a single `flags.json` artifact for the SDK to consume
+- 📊 **Auto-updated README table** - your flag dashboard, regenerated on every change
+- 🔁 **Idempotent commits** - only pushes when something actually changed
+- 🔐 **Uses `GITHUB_TOKEN`** - no extra secrets to manage
+- 🪶 **Bundled** - no `node_modules` install at runtime; ships as a single JS file
 
 ---
 
@@ -26,7 +26,7 @@
 
 Add two workflows to your flag repo (or use the [flagpost-template](https://github.com/ianwelerson/flagpost-template) which ships them by default).
 
-### `.github/workflows/validate.yml` — runs on PRs
+### `.github/workflows/validate.yml` - runs on PRs
 
 ```yaml
 name: Validate flags
@@ -47,7 +47,7 @@ jobs:
           mode: validate
 ```
 
-### `.github/workflows/build.yml` — runs on merge to `main`
+### `.github/workflows/build.yml` - runs on merge to `main`
 
 ```yaml
 name: Build flags
@@ -87,7 +87,7 @@ That's it. The action handles everything else.
 
 | Name                | Required | Default                                                 | Description                              |
 | ------------------- | -------- | ------------------------------------------------------- | ---------------------------------------- |
-| `mode`              | ✅       | —                                                       | `validate` or `build`                    |
+| `mode`              | ✅       | -                                                       | `validate` or `build`                    |
 | `flags-dir`         |          | `flags`                                                 | Directory containing per-flag YAML files |
 | `output-path`       |          | `flags.json`                                            | Where the compiled artifact is written   |
 | `readme-path`       |          | `README.md`                                             | README to update with the flag table     |
@@ -133,7 +133,7 @@ In build mode, the action replaces the contents between two HTML-comment markers
 <!-- flagpost:flags-table:end -->
 ```
 
-If the markers are missing, the README update is **skipped with a warning** — the rest of the build still runs.
+If the markers are missing, the README update is **skipped with a warning** - the rest of the build still runs.
 
 The generated table looks like:
 
@@ -155,7 +155,7 @@ Every flag file must:
    - `owner: string` (optional, ≤ 64 chars)
 2. ✅ Have its `name` field equal to the filename (minus the `.yml` extension)
 3. ✅ Be unique across the directory (no two files defining the same `name`)
-4. ✅ Use a strict schema — **unknown fields are rejected** (catches typos like `enabld: true`)
+4. ✅ Use a strict schema - **unknown fields are rejected** (catches typos like `enabld: true`)
 
 If validation fails, the action emits a clear error per file and exits non-zero.
 
@@ -172,7 +172,7 @@ jobs:
       contents: write
 ```
 
-The default `GITHUB_TOKEN` is used — no extra secrets needed.
+The default `GITHUB_TOKEN` is used - no extra secrets needed.
 
 ---
 

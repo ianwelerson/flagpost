@@ -2,7 +2,7 @@
 
 # 📦 @flagpost/sdk-js
 
-**JavaScript / TypeScript SDK for [flagpost](https://github.com/ianwelerson/flagpost) — read feature flags from a GitHub repo at runtime.**
+**JavaScript / TypeScript SDK for [flagpost](https://github.com/ianwelerson/flagpost) - read feature flags from a GitHub repo at runtime.**
 
 [![npm version](https://img.shields.io/npm/v/@flagpost/sdk-js.svg)](https://www.npmjs.com/package/@flagpost/sdk-js)
 [![npm downloads](https://img.shields.io/npm/dm/@flagpost/sdk-js.svg)](https://www.npmjs.com/package/@flagpost/sdk-js)
@@ -16,13 +16,13 @@
 
 ## ✨ Features
 
-- 🪶 **Tiny** — zero runtime deps beyond `@flagpost/core`, ESM + CJS + types
-- ⚡ **Synchronous reads** — `isEnabled()` returns immediately after `load()`, no `await` per check
-- 🔄 **Background refresh** — stale reads return cached value while a fresh fetch runs in the background; reads never block
-- 🧪 **First-class overrides** — static map + function override for dev, tests, and per-environment behavior
-- 🔒 **Private repo support** — fetches via the GitHub API with a PAT
-- 🤝 **Concurrent-safe** — coalesces parallel `load()` calls into a single fetch
-- 📦 **Universal** — works in Node 20+ and any runtime with global `fetch` (Bun, Deno, Cloudflare Workers, edge functions)
+- 🪶 **Tiny** - zero runtime deps beyond `@flagpost/core`, ESM + CJS + types
+- ⚡ **Synchronous reads** - `isEnabled()` returns immediately after `load()`, no `await` per check
+- 🔄 **Background refresh** - stale reads return cached value while a fresh fetch runs in the background; reads never block
+- 🧪 **First-class overrides** - static map + function override for dev, tests, and per-environment behavior
+- 🔒 **Private repo support** - fetches via the GitHub API with a PAT
+- 🤝 **Concurrent-safe** - coalesces parallel `load()` calls into a single fetch
+- 📦 **Universal** - works in Node 20+ and any runtime with global `fetch` (Bun, Deno, Cloudflare Workers, edge functions)
 
 ---
 
@@ -65,21 +65,69 @@ if (flagpost.isEnabled("new-checkout")) {
 
 | Option      | Type                                     | Default        | Description                                                                    |
 | ----------- | ---------------------------------------- | -------------- | ------------------------------------------------------------------------------ |
-| `repo`      | `string`                                 | —              | **Required.** GitHub repo in `owner/name` form.                                |
-| `token`     | `string`                                 | —              | Personal access token. Required for private repos.                             |
+| `repo`      | `string`                                 | -              | **Required.** GitHub repo in `owner/name` form.                                |
+| `token`     | `string`                                 | -              | Personal access token. Required for private repos.                             |
 | `ref`       | `string`                                 | `'main'`       | Branch, tag, or commit SHA to read from.                                       |
 | `path`      | `string`                                 | `'flags.json'` | Path to the compiled artifact in the repo.                                     |
 | `cacheTTL`  | `number`                                 | `60000`        | Cache lifetime in ms. After this, the next read triggers a background refresh. |
-| `overrides` | `Record<string, boolean>`                | —              | Static map: force flags on/off locally.                                        |
-| `override`  | `(name, remote) => boolean \| undefined` | —              | Function override; takes precedence over the static map.                       |
+| `overrides` | `Record<string, boolean>`                | -              | Static map: force flags on/off locally.                                        |
+| `override`  | `(name, remote) => boolean \| undefined` | -              | Function override; takes precedence over the static map.                       |
 | `fetch`     | `typeof fetch`                           | global `fetch` | Custom fetch implementation (useful for testing or Node <18).                  |
 
-### Required PAT scope
+---
 
-For **private repos**, the PAT needs read access to the repo's contents:
+## 🔑 Getting a GitHub token (private repos)
 
-- **Fine-grained token (recommended):** `Contents: Read-only` for the specific flag repo
-- **Classic token:** `repo` scope (gives broader access — prefer fine-grained)
+If your flag repo is **public**, you can skip this section - the SDK works without a token.
+
+For **private repos**, you need a Personal Access Token (PAT) with read access to the repo. Use a **fine-grained PAT** scoped to the single flag repo - it grants the absolute minimum permissions and is safe to embed in your app's environment.
+
+### Step-by-step: create a fine-grained PAT (recommended)
+
+1. Go to **[github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)**
+   (or: GitHub -> click your avatar -> **Settings** -> **Developer settings** -> **Personal access tokens** -> **Fine-grained tokens** -> **Generate new token**)
+2. Set a **Token name** like `flagpost-sdk-<app-name>` so you can identify it later
+3. Set **Expiration** (90 days is a sensible default - rotate on this schedule)
+4. Under **Resource owner**, pick the account or org that owns the flag repo
+5. Under **Repository access**, choose **Only select repositories** and pick your flag repo (e.g. `my-flags`)
+6. Under **Repository permissions**, set:
+   - **Contents** -> **Read-only** _(required - this is what lets the SDK fetch `flags.json`)_
+   - _Leave everything else as "No access"_
+7. Click **Generate token** and copy the value immediately - GitHub only shows it once
+
+### Alternative: classic PAT
+
+If your org disallows fine-grained tokens, fall back to a classic PAT at **[github.com/settings/tokens](https://github.com/settings/tokens)** with the `repo` scope. Note: classic tokens grant access to _all_ your repos, so prefer fine-grained whenever possible.
+
+### Where to put the token
+
+**Never commit the token to git.** Pass it through an environment variable:
+
+```ts
+import { Flagpost } from "@flagpost/sdk-js";
+
+const flagpost = new Flagpost({
+  repo: "your-user/my-flags",
+  token: process.env.FLAGPOST_TOKEN,
+});
+```
+
+| Platform               | Where to set it                                |
+| ---------------------- | ---------------------------------------------- |
+| Local dev              | `.env.local` (gitignored), `direnv`            |
+| Vercel / Netlify       | Project Settings -> Environment Variables      |
+| AWS / GCP / Azure      | Secrets Manager / Secret Manager / Key Vault   |
+| GitHub Actions         | Repo Settings -> Secrets and variables -> Actions |
+| Docker / Kubernetes    | Container env vars / sealed secrets            |
+
+### Security best practices
+
+- **Use a dedicated token** for the SDK - don't reuse a personal "everything" token
+- **Scope it to the flag repo only** (fine-grained PAT, single repo, `Contents: Read`)
+- **Set an expiration** and rotate periodically
+- **Revoke immediately** at [github.com/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens) if leaked
+- **Don't log the token** - the SDK never logs it; make sure your own error handlers don't either
+- **Server-side only** - this token grants repo read access; treat it like any server secret and don't ship it to the browser
 
 ---
 
@@ -87,7 +135,7 @@ For **private repos**, the PAT needs read access to the repo's contents:
 
 Override flag values without touching the repo. Perfect for local dev, testing, and per-environment behavior.
 
-### Static map — most common case
+### Static map - most common case
 
 Force specific flags on or off:
 
@@ -101,9 +149,9 @@ new Flagpost({
 });
 ```
 
-> 💡 Static overrides work **without calling `load()`** — useful for tests where you don't want any network calls.
+> 💡 Static overrides work **without calling `load()`** - useful for tests where you don't want any network calls.
 
-### Function override — for dynamic conditions
+### Function override - for dynamic conditions
 
 Useful when overrides depend on env vars, hostname, request context, or anything else dynamic:
 
@@ -169,7 +217,7 @@ class Flagpost {
 - When the snapshot exceeds `cacheTTL`, the next `isEnabled` call:
   - Returns the **stale value immediately** (reads never block)
   - Triggers a **background refresh** that updates the snapshot when complete
-- Concurrent `load()` calls are **coalesced** — only one fetch in flight at a time
+- Concurrent `load()` calls are **coalesced** - only one fetch in flight at a time
 - Background fetch failures are silently retried on the next stale read
 
 ### Errors
@@ -198,7 +246,7 @@ try {
 
 ## 🧪 Testing
 
-Mocking the SDK is easy thanks to overrides — no need to stub network calls:
+Mocking the SDK is easy thanks to overrides - no need to stub network calls:
 
 ```ts
 import { Flagpost } from "@flagpost/sdk-js";
@@ -247,7 +295,7 @@ Authenticated requests get **5,000/hr per token**. With the default 60-second ca
 <details>
 <summary><strong>Can I use this in the browser?</strong></summary>
 
-Not recommended — it would require shipping a PAT to client code. Use it server-side (Node, Bun, edge functions) and expose flag state to the browser via your own API.
+Not recommended - it would require shipping a PAT to client code. Use it server-side (Node, Bun, edge functions) and expose flag state to the browser via your own API.
 
 </details>
 

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { FlagpostError, FlagpostNotLoadedError } from './errors.js';
+import { FlagpostError, FlagpostNotLoadedError, FlagpostValidationError } from './errors.js';
 import { Flagpost } from './flagpost.js';
 
 function makePayload(overrides: Record<string, boolean> = {}) {
@@ -24,7 +24,38 @@ function jsonResponse(body: unknown): Response {
   });
 }
 
-describe('Flagpost', () => {
+describe('Flagpost - constructor', () => {
+  it('throws when neither source nor repo is provided', () => {
+    expect(() => new Flagpost({})).toThrow(FlagpostError);
+  });
+
+  it('accepts legacy top-level repo option', () => {
+    expect(() => new Flagpost({ repo: 'a/b', fetch: vi.fn() })).not.toThrow();
+  });
+
+  it('accepts source: github', () => {
+    expect(
+      () =>
+        new Flagpost({
+          source: { type: 'github', repo: 'a/b', fetch: vi.fn() },
+        }),
+    ).not.toThrow();
+  });
+
+  it('accepts source: memory', () => {
+    expect(
+      () =>
+        new Flagpost({
+          source: {
+            type: 'memory',
+            flags: makePayload(),
+          },
+        }),
+    ).not.toThrow();
+  });
+});
+
+describe('Flagpost - legacy github shape', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -33,16 +64,8 @@ describe('Flagpost', () => {
     vi.useRealTimers();
   });
 
-  it('requires a repo option', () => {
-    // @ts-expect-error -- testing runtime validation
-    expect(() => new Flagpost({})).toThrow(FlagpostError);
-  });
-
   it('throws on isEnabled before load', () => {
-    const flagpost = new Flagpost({
-      repo: 'a/b',
-      fetch: vi.fn(),
-    });
+    const flagpost = new Flagpost({ repo: 'a/b', fetch: vi.fn() });
     expect(() => flagpost.isEnabled('any')).toThrow(FlagpostNotLoadedError);
   });
 
@@ -125,19 +148,48 @@ describe('Flagpost', () => {
       .fn()
       .mockResolvedValueOnce(jsonResponse(makePayload({ extra: false })))
       .mockResolvedValueOnce(jsonResponse(makePayload({ extra: true })));
-    // cacheTTL of 0 means every read after load is considered stale
+    const flagpost = new Flagpost({ repo: 'a/b', fetch: fetchMock, cacheTTL: 0 });
+    await flagpost.load();
+    expect(flagpost.isEnabled('extra')).toBe(false);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(flagpost.isEnabled('extra')).toBe(true);
+  });
+
+  it('swallows background refresh failures and reports via onRefreshError', async () => {
+    vi.useRealTimers();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(makePayload()))
+      .mockRejectedValueOnce(new Error('boom'));
+    const onRefreshError = vi.fn();
     const flagpost = new Flagpost({
       repo: 'a/b',
       fetch: fetchMock,
       cacheTTL: 0,
+      onRefreshError,
     });
     await flagpost.load();
-    // Stale read returns stale value, kicks off background refresh
-    expect(flagpost.isEnabled('extra')).toBe(false);
-    // Wait for the background fetch promise to resolve
+    // Triggering stale read kicks off the failing background refresh.
+    expect(flagpost.isEnabled('dark-mode')).toBe(true);
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(flagpost.isEnabled('extra')).toBe(true);
+    // No throw - we still have the original snapshot.
+    expect(flagpost.isEnabled('dark-mode')).toBe(true);
+    expect(onRefreshError).toHaveBeenCalledTimes(1);
+    expect((onRefreshError.mock.calls[0]?.[0] as Error).message).toContain('boom');
+  });
+
+  it('background failure path is safe without onRefreshError callback', async () => {
+    vi.useRealTimers();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(makePayload()))
+      .mockRejectedValueOnce(new Error('boom'));
+    const flagpost = new Flagpost({ repo: 'a/b', fetch: fetchMock, cacheTTL: 0 });
+    await flagpost.load();
+    expect(flagpost.isEnabled('dark-mode')).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(flagpost.isEnabled('dark-mode')).toBe(true);
   });
 
   it('coalesces concurrent loads into one fetch', async () => {
@@ -147,27 +199,109 @@ describe('Flagpost', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('exposes getFlag and getAll', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(makePayload()));
-    const flagpost = new Flagpost({ repo: 'a/b', fetch: fetchMock });
-    await flagpost.load();
-    expect(flagpost.getFlag('dark-mode')).toEqual({
-      name: 'dark-mode',
-      enabled: true,
-    });
-    expect(flagpost.getFlag('nope')).toBeUndefined();
-    expect(flagpost.getAll().version).toBe(1);
-  });
-
-  it('isLoaded() and cacheAge() reflect state', async () => {
+  it('exposes getFlag, getAll, isLoaded, cacheAge', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(makePayload()));
     const flagpost = new Flagpost({ repo: 'a/b', fetch: fetchMock });
     expect(flagpost.isLoaded()).toBe(false);
     expect(flagpost.cacheAge()).toBeNull();
+    expect(() => flagpost.getFlag('any')).toThrow(FlagpostNotLoadedError);
+    expect(() => flagpost.getAll()).toThrow(FlagpostNotLoadedError);
+
     await flagpost.load();
+    expect(flagpost.getFlag('dark-mode')).toMatchObject({ name: 'dark-mode', enabled: true });
+    expect(flagpost.getFlag('nope')).toBeUndefined();
+    expect(flagpost.getAll().version).toBe(1);
     expect(flagpost.isLoaded()).toBe(true);
     expect(flagpost.cacheAge()).toBe(0);
     vi.advanceTimersByTime(1500);
     expect(flagpost.cacheAge()).toBe(1500);
+  });
+});
+
+describe('Flagpost - memory source', () => {
+  it('loads validated flags from a memory source', async () => {
+    const flagpost = new Flagpost({
+      source: { type: 'memory', flags: makePayload() },
+    });
+    await flagpost.load();
+    expect(flagpost.isEnabled('dark-mode')).toBe(true);
+    expect(flagpost.isEnabled('new-checkout')).toBe(false);
+  });
+
+  it('throws FlagpostValidationError when memory flags fail schema', async () => {
+    const flagpost = new Flagpost({
+      // @ts-expect-error -- testing runtime validation
+      source: { type: 'memory', flags: { wrong: 'shape' } },
+    });
+    await expect(flagpost.load()).rejects.toThrow(FlagpostValidationError);
+  });
+});
+
+describe('Flagpost - evaluation context', () => {
+  it('evaluates flag using userId for rollout', async () => {
+    const flags = {
+      version: 1 as const,
+      generatedAt: '2026-05-13T00:00:00.000Z',
+      flags: {
+        'rolled-out': { name: 'rolled-out', enabled: true, rollout: 100 },
+        'rolled-zero': { name: 'rolled-zero', enabled: true, rollout: 0 },
+      },
+    };
+    const flagpost = new Flagpost({ source: { type: 'memory', flags } });
+    await flagpost.load();
+    expect(flagpost.isEnabled('rolled-out', { userId: 'u1' })).toBe(true);
+    expect(flagpost.isEnabled('rolled-zero', { userId: 'u1' })).toBe(false);
+  });
+
+  it('merges defaultContext with per-call context', async () => {
+    const flags = {
+      version: 1 as const,
+      generatedAt: '2026-05-13T00:00:00.000Z',
+      flags: {
+        targeted: {
+          name: 'targeted',
+          enabled: false,
+          targeting: { enable: { groups: ['admin'] } },
+        },
+      },
+    };
+    const flagpost = new Flagpost({
+      source: { type: 'memory', flags },
+      defaultContext: { groups: ['admin'] },
+    });
+    await flagpost.load();
+    expect(flagpost.isEnabled('targeted')).toBe(true);
+    // Per-call context wins for matching keys
+    expect(flagpost.isEnabled('targeted', { groups: ['user'] })).toBe(false);
+  });
+
+  it('selects environment-specific config', async () => {
+    const flags = {
+      version: 1 as const,
+      generatedAt: '2026-05-13T00:00:00.000Z',
+      flags: {
+        feature: {
+          name: 'feature',
+          enabled: true,
+          environments: {
+            production: { enabled: false },
+          },
+        },
+      },
+    };
+    const flagpost = new Flagpost({ source: { type: 'memory', flags } });
+    await flagpost.load();
+    expect(flagpost.isEnabled('feature', { environment: 'staging' })).toBe(true);
+    expect(flagpost.isEnabled('feature', { environment: 'production' })).toBe(false);
+  });
+
+  it('passes context to override fn', async () => {
+    const flagpost = new Flagpost({
+      source: { type: 'memory', flags: makePayload() },
+      override: (name, _remote, ctx) => (ctx.userId === 'special' ? true : undefined),
+    });
+    await flagpost.load();
+    expect(flagpost.isEnabled('new-checkout', { userId: 'special' })).toBe(true);
+    expect(flagpost.isEnabled('new-checkout', { userId: 'normal' })).toBe(false);
   });
 });

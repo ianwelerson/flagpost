@@ -18,6 +18,7 @@
     "build": "ncc build src/index.ts -o dist --source-map --license licenses.txt",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@types/node": "^25.7.0",
     "@vercel/ncc": "^0.38.2",
+    "@vitest/coverage-v8": "^2.1.4",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"
   }

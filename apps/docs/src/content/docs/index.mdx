@@ -1,0 +1,39 @@
+---
+title: flagpost
+description: Git-based feature flag control. Manage feature flags as YAML files in a GitHub repo - no servers, no accounts.
+template: splash
+hero:
+  tagline: Git-based feature flag control. Manage feature flags as YAML, evaluate them with a tiny SDK, ship without any server.
+  actions:
+    - text: Quick start
+      link: /introduction/quick-start/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/ianwelerson/flagpost
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Flags as YAML" icon="document">
+    One file per flag, version-controlled, easy to diff and review.
+  </Card>
+  <Card title="PR-driven changes" icon="approve-check">
+    Review, audit log, and rollback come for free via `git`.
+  </Card>
+  <Card title="Tiny JS SDK" icon="seti:javascript">
+    Synchronous reads after one async load. Zero runtime deps beyond `@flagpost/core`.
+  </Card>
+  <Card title="Percentage rollout & targeting" icon="random">
+    Deterministic bucketing, user/group rules, per-environment overrides.
+  </Card>
+  <Card title="Multiple sources" icon="seti:folder">
+    Read flags from a GitHub repo, a local file, or an in-memory object.
+  </Card>
+  <Card title="Zero infrastructure" icon="rocket">
+    No servers, no databases, no accounts. GitHub is the only dependency.
+  </Card>
+</CardGrid>

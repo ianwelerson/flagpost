@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { FlagpostFetchError } from './errors.js';
+import { FlagpostFetchError, FlagpostValidationError } from './errors.js';
 import { fetchFlags } from './fetcher.js';
 
 function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
@@ -90,7 +90,7 @@ describe('fetchFlags', () => {
     ).rejects.toThrow(FlagpostFetchError);
   });
 
-  it('throws when payload does not match schema', async () => {
+  it('throws FlagpostValidationError when payload does not match schema', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ wrong: 'shape' }));
     await expect(
       fetchFlags({
@@ -99,7 +99,75 @@ describe('fetchFlags', () => {
         path: 'flags.json',
         fetch: fetchMock,
       }),
-    ).rejects.toThrow(FlagpostFetchError);
+    ).rejects.toThrow(FlagpostValidationError);
+  });
+
+  it('returns a token-aware 404 message when no token was passed', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('', { status: 404 }));
+    await expect(
+      fetchFlags({ repo: 'a/b', ref: 'main', path: 'flags.json', fetch: fetchMock }),
+    ).rejects.toThrow(/Did you forget to pass a token/);
+  });
+
+  it('returns specific message for 401', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('', { status: 401 }));
+    await expect(
+      fetchFlags({ repo: 'a/b', ref: 'main', path: 'flags.json', token: 'x', fetch: fetchMock }),
+    ).rejects.toThrow(/Unauthorized/);
+  });
+
+  it('returns specific message for 403', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('', { status: 403 }));
+    await expect(
+      fetchFlags({ repo: 'a/b', ref: 'main', path: 'flags.json', token: 'x', fetch: fetchMock }),
+    ).rejects.toThrow(/Forbidden/);
+  });
+
+  it('returns specific message for 429', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('', { status: 429 }));
+    await expect(
+      fetchFlags({ repo: 'a/b', ref: 'main', path: 'flags.json', token: 'x', fetch: fetchMock }),
+    ).rejects.toThrow(/Rate limited/);
+  });
+
+  it('returns generic message for unexpected status codes', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('', { status: 500 }));
+    await expect(
+      fetchFlags({ repo: 'a/b', ref: 'main', path: 'flags.json', fetch: fetchMock }),
+    ).rejects.toThrow(/HTTP 500/);
+  });
+
+  it('throws when response body is not valid JSON', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response('not-json', { status: 200, headers: { 'content-type': 'text/plain' } }),
+      );
+    await expect(
+      fetchFlags({ repo: 'a/b', ref: 'main', path: 'flags.json', fetch: fetchMock }),
+    ).rejects.toThrow(/not valid JSON/);
+  });
+
+  it('treats non-Error thrown values from fetch as unknown', async () => {
+    const fetchMock = vi.fn().mockRejectedValue('string error');
+    await expect(
+      fetchFlags({ repo: 'a/b', ref: 'main', path: 'flags.json', fetch: fetchMock }),
+    ).rejects.toThrow(/unknown error/);
+  });
+
+  it('never includes the token in error messages', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('', { status: 403 }));
+    try {
+      await fetchFlags({
+        repo: 'a/b',
+        ref: 'main',
+        path: 'flags.json',
+        token: 'ghp_supersecret',
+        fetch: fetchMock,
+      });
+    } catch (err) {
+      expect((err as Error).message).not.toContain('ghp_supersecret');
+    }
   });
 
   it('encodes special characters in path and ref', async () => {

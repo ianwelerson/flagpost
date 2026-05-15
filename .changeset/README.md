@@ -1,6 +1,6 @@
 # Changesets
 
-This directory holds [changesets](https://github.com/changesets/changesets) — markdown files describing version bumps for the packages in this monorepo.
+This directory holds [changesets](https://github.com/changesets/changesets) - markdown files describing version bumps for the packages in this monorepo.
 
 ## Adding a changeset
 
