@@ -38,7 +38,7 @@ This is the **monorepo** for the flagpost project.
 | Package                                 | Description                                  | Version |
 | --------------------------------------- | -------------------------------------------- | ------- |
 | [`@flagpost/core`](./packages/core)     | Shared flag schema & types (zod)             | `0.1.0-alpha.0` |
-| [`@flagpost/sdk-js`](./packages/sdk-js) | JS runtime SDK                               | `0.1.0-alpha.0` |
+| [`@flagpost/sdk-js`](./packages/sdk-js) | JS runtime SDK                               | `0.1.0-alpha.1` |
 | [`@flagpost/action`](./packages/action) | GitHub Action: validate + build `flags.json` | `0.0.0` |
 
 End users start with the [**flagpost-template**](https://github.com/ianwelerson/flagpost-template) repo (one-click "Use this template"), then install `@flagpost/sdk-js` in their app.

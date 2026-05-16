@@ -8,6 +8,7 @@
     "@flagpost/sdk-js": "0.0.0"
   },
   "changesets": [
+    "fix-browser-fetch-binding",
     "initial-release"
   ]
 }

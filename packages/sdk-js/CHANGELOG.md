@@ -1,5 +1,11 @@
 # @flagpost/sdk-js
 
+## 0.1.0-alpha.1
+
+### Patch Changes
+
+- 40b9b77: Bind globalThis.fetch so the github source works in browsers (fixes Illegal invocation).
+
 ## 0.1.0-alpha.0
 
 ### Minor Changes
