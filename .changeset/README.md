@@ -12,4 +12,4 @@ Pick the affected packages, the bump type (patch/minor/major), and write a short
 
 ## Releasing
 
-On merge to `develop`, a release workflow (TBD) consumes the accumulated changesets to bump versions and publish to npm.
+On merge to `main`, the release workflow (`.github/workflows/release.yml`) runs `changesets/action`. It opens a "Version Packages" PR that bumps versions and updates each package's `CHANGELOG.md`; merging that PR triggers npm publish, git tags, and GitHub releases.

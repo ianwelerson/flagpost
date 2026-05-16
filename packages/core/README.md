@@ -7,7 +7,7 @@
 [![npm version](https://img.shields.io/npm/v/@flagpost/core.svg)](https://www.npmjs.com/package/@flagpost/core)
 [![npm downloads](https://img.shields.io/npm/dm/@flagpost/core.svg)](https://www.npmjs.com/package/@flagpost/core)
 [![types](https://img.shields.io/npm/types/@flagpost/core.svg)](https://www.npmjs.com/package/@flagpost/core)
-[![license](https://img.shields.io/npm/l/@flagpost/core.svg)](https://github.com/ianwelerson/flagpost/blob/develop/LICENSE)
+[![license](https://img.shields.io/npm/l/@flagpost/core.svg)](https://github.com/ianwelerson/flagpost/blob/main/LICENSE)
 
 </div>
 
@@ -22,7 +22,7 @@
 - 🔍 A **YAML parser + validator** (`parseFlagYaml`)
 - 🏷️ TypeScript **types** for both
 
-It's consumed by [`@flagpost/sdk-js`](https://www.npmjs.com/package/@flagpost/sdk-js) and [`@flagpost/action`](https://github.com/ianwelerson/flagpost/tree/develop/packages/action).
+It's consumed by [`@flagpost/sdk-js`](https://www.npmjs.com/package/@flagpost/sdk-js) and [`@flagpost/action`](https://github.com/ianwelerson/flagpost/tree/main/packages/action).
 
 > 💡 **Most users don't need to install this directly** - it's a building block. Install it only if you're building tooling that reads/writes flag YAML.
 
@@ -131,4 +131,4 @@ export class FlagParseError extends Error {
 
 ## 📄 License
 
-[MIT](https://github.com/ianwelerson/flagpost/blob/develop/LICENSE) © [Ian Welerson](https://github.com/ianwelerson)
+[MIT](https://github.com/ianwelerson/flagpost/blob/main/LICENSE) © [Ian Welerson](https://github.com/ianwelerson)

@@ -12,7 +12,7 @@ See [IDEA.md](./IDEA.md) for the full design and naming decisions.
 
 ## Apps
 
-- `apps/docs` -> `@flagpost/docs` - Astro Starlight documentation site, deployed to GitHub Pages at flagpost.dev.
+- `apps/docs` -> `@flagpost/docs` - Astro Starlight documentation site, deployed to GitHub Pages at flagpost.ianwelerson.com.
 
 Cross-package imports resolve via tsconfig `paths` (typecheck) and vitest `resolve.alias` (tests), both pointing at the source TS - so neither typecheck nor tests need a prior build.
 
@@ -46,7 +46,7 @@ pnpm --filter @flagpost/docs build  # build static site
 
 ## Naming & ownership context
 
-- Code currently lives under `ianwelerson/` for portfolio visibility; planned future GitHub org is `flagpost-dev` (mirrors the planned `flagpost.dev` domain).
+- Code currently lives under `ianwelerson/` for portfolio visibility; planned future GitHub org is `flagpost-dev` (mirrors the planned `flagpost.ianwelerson.com` domain).
 - npm scope `@flagpost` is reserved and used from day one - packages stay stable across any future org transfer.
 - See the **Naming & ownership** section in IDEA.md for the full table.
 

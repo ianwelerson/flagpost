@@ -1,0 +1,11 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@flagpost/docs": "0.0.0",
+    "@flagpost/action": "0.0.0",
+    "@flagpost/core": "0.0.0",
+    "@flagpost/sdk-js": "0.0.0"
+  },
+  "changesets": []
+}

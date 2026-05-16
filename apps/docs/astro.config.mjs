@@ -2,10 +2,10 @@ import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 import starlightLlmsTxt from 'starlight-llms-txt';
 
-// When deploying to a custom domain (flagpost.dev), `site` is the canonical URL and
+// When deploying to a custom domain (flagpost.ianwelerson.com), `site` is the canonical URL and
 // `base` stays at '/'. If hosting at github.io/<repo>, set base: '/flagpost/' instead.
 export default defineConfig({
-  site: 'https://flagpost.dev',
+  site: 'https://flagpost.ianwelerson.com',
   integrations: [
     starlight({
       title: 'flagpost',
@@ -29,7 +29,7 @@ export default defineConfig({
         },
       ],
       editLink: {
-        baseUrl: 'https://github.com/ianwelerson/flagpost/edit/develop/apps/docs/',
+        baseUrl: 'https://github.com/ianwelerson/flagpost/edit/main/apps/docs/',
       },
       sidebar: [
         {

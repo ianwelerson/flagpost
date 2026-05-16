@@ -9,7 +9,7 @@
     "url": "git+https://github.com/ianwelerson/flagpost.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/ianwelerson/flagpost/tree/develop/packages/core",
+  "homepage": "https://github.com/ianwelerson/flagpost/tree/main/packages/core",
   "publishConfig": {
     "access": "public"
   },

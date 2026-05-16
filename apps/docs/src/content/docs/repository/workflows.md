@@ -156,13 +156,13 @@ uses: ianwelerson/flagpost/packages/action@a1b2c3...
 During pre-release or local development you can use a branch:
 
 ```yaml
-uses: ianwelerson/flagpost/packages/action@develop
+uses: ianwelerson/flagpost/packages/action@main
 ```
 
-Don't use `@develop` for production - it can change without notice.
+Don't use `@main` for production - it can change without notice.
 
 ## How it works under the hood
 
 The action is a TypeScript GitHub Action bundled with `@vercel/ncc` into a single `dist/index.js`. GitHub clones the repo at the specified ref and runs that file with Node 24. There's no `npm install` at runtime - the bundle is self-contained.
 
-Source: [`packages/action`](https://github.com/ianwelerson/flagpost/tree/develop/packages/action).
+Source: [`packages/action`](https://github.com/ianwelerson/flagpost/tree/main/packages/action).

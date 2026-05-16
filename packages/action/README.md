@@ -4,7 +4,7 @@
 
 **GitHub Action that powers a [flagpost](https://github.com/ianwelerson/flagpost) flag repo - validates flag YAML, compiles `flags.json`, and keeps the auto-updated flag table fresh.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ianwelerson/flagpost/blob/develop/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ianwelerson/flagpost/blob/main/LICENSE)
 [![Node](https://img.shields.io/badge/node-24-brightgreen)](https://nodejs.org)
 
 </div>
@@ -193,4 +193,4 @@ The compiled `flags.json` is what `@flagpost/sdk-js` fetches at runtime. Keys ar
 
 ## 📄 License
 
-[MIT](https://github.com/ianwelerson/flagpost/blob/develop/LICENSE) © [Ian Welerson](https://github.com/ianwelerson)
+[MIT](https://github.com/ianwelerson/flagpost/blob/main/LICENSE) © [Ian Welerson](https://github.com/ianwelerson)

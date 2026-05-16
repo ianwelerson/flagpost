@@ -140,7 +140,7 @@ pnpm lint:fix         # biome check --write
 ```
 flagpost/
 ├── apps/
-│   └── docs/         # @flagpost/docs - Astro Starlight site (flagpost.dev)
+│   └── docs/         # @flagpost/docs - Astro Starlight site (flagpost.ianwelerson.com)
 ├── packages/
 │   ├── core/         # @flagpost/core - shared schema & types
 │   ├── sdk-js/       # @flagpost/sdk-js - JS runtime
@@ -170,7 +170,7 @@ Before submitting a PR, please run `pnpm lint && pnpm typecheck && pnpm test` lo
 
 ## 🔗 Related
 
-- 🌐 [flagpost.dev](https://flagpost.dev) - _(coming soon)_
+- 🌐 [flagpost.ianwelerson.com](https://flagpost.ianwelerson.com) - _(coming soon)_
 - 📦 [@flagpost on npm](https://www.npmjs.com/org/flagpost)
 - 📁 [flagpost-template](https://github.com/ianwelerson/flagpost-template) - fork target for end users
 - 💡 [upptime](https://upptime.js.org) - the project that inspired this approach

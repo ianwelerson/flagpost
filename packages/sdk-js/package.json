@@ -9,7 +9,7 @@
     "url": "git+https://github.com/ianwelerson/flagpost.git",
     "directory": "packages/sdk-js"
   },
-  "homepage": "https://github.com/ianwelerson/flagpost/tree/develop/packages/sdk-js",
+  "homepage": "https://github.com/ianwelerson/flagpost/tree/main/packages/sdk-js",
   "publishConfig": {
     "access": "public"
   },

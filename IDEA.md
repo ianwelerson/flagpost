@@ -246,13 +246,13 @@ Runs in the flag repo on every PR and merge:
 | Code repo (monorepo) | [github.com/ianwelerson/flagpost](https://github.com/ianwelerson/flagpost) | created |
 | Template repo (fork target) | [github.com/ianwelerson/flagpost-template](https://github.com/ianwelerson/flagpost-template) | created |
 | npm scope | `@flagpost` | reserved |
-| Domain | `flagpost.dev` | planned |
+| Domain | `flagpost.ianwelerson.com` | planned |
 | Future GitHub org | `flagpost-dev` (mirrors domain) | planned |
 
 **Why this split:**
 - Code lives under `ianwelerson/` for portfolio visibility while the project is early. GitHub redirects forever after a transfer, so moving to `flagpost-dev/` later won't break URLs, clones, or "Use this template" links.
 - npm scope is `@flagpost` from day one - packages stay stable across any GitHub org change, so users never have to update their `package.json`.
-- Domain `flagpost.dev` aligns with the future GitHub org `flagpost-dev` for a single coherent identity.
+- Domain `flagpost.ianwelerson.com` aligns with the future GitHub org `flagpost-dev` for a single coherent identity.
 
 **Package names:**
 - `@flagpost/core` - shared schema & types
