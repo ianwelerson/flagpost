@@ -1,6 +1,6 @@
 {
   "name": "@flagpost/sdk-js",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.0",
   "description": "JS SDK for reading feature flags from a flagpost repo",
   "license": "MIT",
   "author": "Ian Welerson",
@@ -24,7 +24,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=24"
   },
