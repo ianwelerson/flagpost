@@ -39,5 +39,12 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Verify action bundle is up to date
+        run: |
+          if ! git diff --exit-code -- packages/action/dist; then
+            echo "::error::packages/action/dist is out of date. Run 'pnpm --filter @flagpost/action build' and commit the result."
+            exit 1
+          fi
+
       - name: Test (with coverage gate)
         run: pnpm test:coverage
