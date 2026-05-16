@@ -110,7 +110,7 @@ See [IDEA.md](./IDEA.md) for the full design and rationale.
 
 ## 🛠️ Development
 
-Requires **Node 20+** and **pnpm 9+**.
+Requires **Node 24+** and **pnpm 9+**.
 
 ```bash
 pnpm install

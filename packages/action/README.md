@@ -5,7 +5,7 @@
 **GitHub Action that powers a [flagpost](https://github.com/ianwelerson/flagpost) flag repo - validates flag YAML, compiles `flags.json`, and keeps the auto-updated flag table fresh.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ianwelerson/flagpost/blob/develop/LICENSE)
-[![Node](https://img.shields.io/badge/node-20-brightgreen)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/node-24-brightgreen)](https://nodejs.org)
 
 </div>
 

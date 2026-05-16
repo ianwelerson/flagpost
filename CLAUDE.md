@@ -18,7 +18,7 @@ Cross-package imports resolve via tsconfig `paths` (typecheck) and vitest `resol
 
 ## Toolchain
 
-- pnpm workspaces, TypeScript strict, Node 20+
+- pnpm workspaces, TypeScript strict, Node 24+
 - Build: `tsup` (sdk-js, core -> ESM+CJS+dts), `@vercel/ncc` (action -> single bundled JS), Astro (docs)
 - Test: vitest + `@vitest/coverage-v8` with a **90% threshold** enforced in CI
 - Lint+format: biome (single tool, config in `biome.json`)

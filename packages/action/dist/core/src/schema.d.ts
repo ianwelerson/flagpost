@@ -238,8 +238,10 @@ export declare const flagSchema: z.ZodObject<{
         } | undefined;
     }>>>;
 }, "strict", z.ZodTypeAny, {
-    enabled: boolean;
     name: string;
+    enabled: boolean;
+    description?: string | undefined;
+    owner?: string | undefined;
     rollout?: number | undefined;
     targeting?: {
         enable?: {
@@ -251,8 +253,6 @@ export declare const flagSchema: z.ZodObject<{
             groups?: string[] | undefined;
         } | undefined;
     } | undefined;
-    description?: string | undefined;
-    owner?: string | undefined;
     environments?: Record<string, {
         enabled?: boolean | undefined;
         rollout?: number | undefined;
@@ -268,8 +268,10 @@ export declare const flagSchema: z.ZodObject<{
         } | undefined;
     }> | undefined;
 }, {
-    enabled: boolean;
     name: string;
+    enabled: boolean;
+    description?: string | undefined;
+    owner?: string | undefined;
     rollout?: number | undefined;
     targeting?: {
         enable?: {
@@ -281,8 +283,6 @@ export declare const flagSchema: z.ZodObject<{
             groups?: string[] | undefined;
         } | undefined;
     } | undefined;
-    description?: string | undefined;
-    owner?: string | undefined;
     environments?: Record<string, {
         enabled?: boolean | undefined;
         rollout?: number | undefined;
@@ -422,8 +422,10 @@ export declare const compiledFlagsSchema: z.ZodObject<{
             } | undefined;
         }>>>;
     }, "strict", z.ZodTypeAny, {
-        enabled: boolean;
         name: string;
+        enabled: boolean;
+        description?: string | undefined;
+        owner?: string | undefined;
         rollout?: number | undefined;
         targeting?: {
             enable?: {
@@ -435,8 +437,6 @@ export declare const compiledFlagsSchema: z.ZodObject<{
                 groups?: string[] | undefined;
             } | undefined;
         } | undefined;
-        description?: string | undefined;
-        owner?: string | undefined;
         environments?: Record<string, {
             enabled?: boolean | undefined;
             rollout?: number | undefined;
@@ -452,8 +452,10 @@ export declare const compiledFlagsSchema: z.ZodObject<{
             } | undefined;
         }> | undefined;
     }, {
-        enabled: boolean;
         name: string;
+        enabled: boolean;
+        description?: string | undefined;
+        owner?: string | undefined;
         rollout?: number | undefined;
         targeting?: {
             enable?: {
@@ -465,8 +467,6 @@ export declare const compiledFlagsSchema: z.ZodObject<{
                 groups?: string[] | undefined;
             } | undefined;
         } | undefined;
-        description?: string | undefined;
-        owner?: string | undefined;
         environments?: Record<string, {
             enabled?: boolean | undefined;
             rollout?: number | undefined;
@@ -486,8 +486,10 @@ export declare const compiledFlagsSchema: z.ZodObject<{
     version: 1;
     generatedAt: string;
     flags: Record<string, {
-        enabled: boolean;
         name: string;
+        enabled: boolean;
+        description?: string | undefined;
+        owner?: string | undefined;
         rollout?: number | undefined;
         targeting?: {
             enable?: {
@@ -499,8 +501,6 @@ export declare const compiledFlagsSchema: z.ZodObject<{
                 groups?: string[] | undefined;
             } | undefined;
         } | undefined;
-        description?: string | undefined;
-        owner?: string | undefined;
         environments?: Record<string, {
             enabled?: boolean | undefined;
             rollout?: number | undefined;
@@ -520,8 +520,10 @@ export declare const compiledFlagsSchema: z.ZodObject<{
     version: 1;
     generatedAt: string;
     flags: Record<string, {
-        enabled: boolean;
         name: string;
+        enabled: boolean;
+        description?: string | undefined;
+        owner?: string | undefined;
         rollout?: number | undefined;
         targeting?: {
             enable?: {
@@ -533,8 +535,6 @@ export declare const compiledFlagsSchema: z.ZodObject<{
                 groups?: string[] | undefined;
             } | undefined;
         } | undefined;
-        description?: string | undefined;
-        owner?: string | undefined;
         environments?: Record<string, {
             enabled?: boolean | undefined;
             rollout?: number | undefined;

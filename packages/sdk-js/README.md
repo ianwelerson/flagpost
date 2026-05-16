@@ -22,7 +22,7 @@
 - 🧪 **First-class overrides** - static map + function override for dev, tests, and per-environment behavior
 - 🔒 **Private repo support** - fetches via the GitHub API with a PAT
 - 🤝 **Concurrent-safe** - coalesces parallel `load()` calls into a single fetch
-- 📦 **Universal** - works in Node 20+ and any runtime with global `fetch` (Bun, Deno, Cloudflare Workers, edge functions)
+- 📦 **Universal** - works in Node 24+ and any runtime with global `fetch` (Bun, Deno, Cloudflare Workers, edge functions)
 
 ---
 
