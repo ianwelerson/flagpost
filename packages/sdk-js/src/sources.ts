@@ -27,7 +27,9 @@ export function createLoader(source: FlagsSource): SourceLoader {
 }
 
 function createGithubLoader(source: Extract<FlagsSource, { type: 'github' }>): SourceLoader {
-  const fetchImpl = source.fetch ?? globalThis.fetch;
+  // Bind globalThis.fetch so it isn't called as a free function - in browsers,
+  // window.fetch's WebIDL guard throws "Illegal invocation" without the receiver.
+  const fetchImpl = source.fetch ?? globalThis.fetch?.bind(globalThis);
   if (!fetchImpl) {
     throw new FlagpostError(
       'No fetch implementation available. Pass `source.fetch` or run on a platform with global `fetch`.',

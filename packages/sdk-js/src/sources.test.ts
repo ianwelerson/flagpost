@@ -119,6 +119,35 @@ describe('createLoader - github', () => {
     expect(url).toBe('https://api.github.com/repos/a/b/contents/dist%2Fflags.json?ref=release');
   });
 
+  it('binds globalThis.fetch on the fallback path so browsers do not throw "Illegal invocation"', async () => {
+    const original = globalThis.fetch;
+    const calls: { thisArg: unknown; url: unknown }[] = [];
+    // Simulate the browser WebIDL guard: window.fetch requires `this === window`.
+    // Implemented as a non-arrow function so `this` is observable at call time.
+    function browserFetch(this: unknown, url: string): Promise<Response> {
+      calls.push({ thisArg: this, url });
+      if (this !== globalThis) {
+        throw new TypeError("Failed to execute 'fetch' on 'Window': Illegal invocation");
+      }
+      return Promise.resolve(
+        new Response(JSON.stringify(validPayload), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      );
+    }
+    globalThis.fetch = browserFetch as typeof globalThis.fetch;
+    try {
+      const loader = createLoader({ type: 'github', repo: 'a/b' });
+      const result = await loader();
+      expect(result.flags['dark-mode']?.enabled).toBe(true);
+      expect(calls).toHaveLength(1);
+      expect(calls[0]?.thisArg).toBe(globalThis);
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
   it('reuses cached flags when GitHub returns 304', async () => {
     const fetchMock = vi
       .fn()
