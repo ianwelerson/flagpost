@@ -1,6 +1,6 @@
 {
   "name": "@flagpost/action",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "GitHub Action that validates flag YAML and builds flags.json for a flagpost repo",
   "license": "MIT",
